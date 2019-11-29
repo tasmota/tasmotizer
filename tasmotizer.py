@@ -1,7 +1,9 @@
 import sys
+
+import serial
+
 import esptool
 import json
-import keyring
 
 from datetime import datetime
 
@@ -71,8 +73,7 @@ class ESPWorker(QObject):
             try:
                 self.backup_start.emit()
                 esptool.main(command)
-            except Exception as e:
-            # except esptool.FatalError or serial.SerialException as e:
+            except esptool.FatalError or serial.SerialException as e:
                 self.port_error.emit("{}".format(e))
 
         if self.continue_flag:
@@ -80,8 +81,7 @@ class ESPWorker(QObject):
             try:
                 esptool.main(command)
                 self.finished.emit()
-            except Exception as e:
-            # except esptool.FatalError or serial.SerialException as e:
+            except esptool.FatalError or serial.SerialException as e:
                 self.port_error.emit("{}".format(e))
 
     @pyqtSlot()
@@ -306,8 +306,7 @@ class FlashingDialog(QDialog):
         esptool.sw.write_start.connect(self.write_start)
         esptool.sw.write_progress.connect(self.write_progress)
         esptool.sw.write_finished.connect(self.write_finished)
-        
-        self.setWindowFlag(Qt.FramelessWindowHint | Qt.ApplicationModal)
+
         self.setFixedWidth(400)
 
         self.nrBinFile = QNetworkRequest()
@@ -431,7 +430,6 @@ class Tasmotizer(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.setWindowFlags(Qt.FramelessWindowHint)
         self.settings = QSettings("tasmotizer.cfg", QSettings.IniFormat)
 
         self.nam = QNetworkAccessManager()
@@ -675,6 +673,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_DisableWindowContextHelpButton)
     app.setQuitOnLastWindowClosed(True)
+    app.setStyle("Fusion")
 
     app.setPalette(dark_palette)
     app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
