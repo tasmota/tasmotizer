@@ -1,7 +1,6 @@
 import sys
 import esptool
 import json
-import keyring
 
 from datetime import datetime
 
