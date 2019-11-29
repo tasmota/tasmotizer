@@ -281,7 +281,7 @@ class SendConfigDialog(QDialog):
                     backlog.append("module {}".format(self.cbModule.currentData()))
 
                 elif self.module_mode == 1:
-                    backlog.extend(["template {}".format(self.leTemplate.text), "module 0"])
+                    backlog.extend(["template {}".format(self.leTemplate.text()), "module 0"])
 
             self.commands = "backlog {}\n".format(";".join(backlog))
 
