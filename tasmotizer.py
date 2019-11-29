@@ -115,6 +115,7 @@ class SendConfigDialog(QDialog):
         flWifi = QFormLayout()
         self.leAP = QLineEdit()
         self.leAPPwd = QLineEdit()
+        self.leAPPwd.setEchoMode(QLineEdit.Password)
         flWifi.addRow("SSID", self.leAP)
         flWifi.addRow("Password", self.leAPPwd)
         self.gbWifi.setLayout(flWifi)
@@ -151,6 +152,8 @@ class SendConfigDialog(QDialog):
         self.leFriendlyName = QLineEdit()
         self.leMQTTUser = QLineEdit()
         self.leMQTTPass = QLineEdit()
+        self.leMQTTPass.setEchoMode(QLineEdit.Password)
+
         flMQTT.addRow("Host", self.leBroker)
         flMQTT.addRow("Port", self.sbPort)
         flMQTT.addRow("Topic", self.leTopic)
