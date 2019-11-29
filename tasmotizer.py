@@ -674,7 +674,8 @@ if __name__ == '__main__':
 
     app.setPalette(dark_palette)
     app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
-
+    app.setStyle("Fusion")
+    
     mw = Tasmotizer()
     mw.show()
 
