@@ -1,4 +1,5 @@
 from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QSizePolicy, QGroupBox, QSpinBox, QHBoxLayout, QDialog, QProgressBar, \
     QPushButton, QButtonGroup, QDialogButtonBox, QLabel
 
@@ -93,91 +94,24 @@ class SpinBox(QSpinBox):
         self.setMaximum(kwargs.get('maximum', 65535))
 
 
-# class Config(QDialog):
-#     def __init__(self):
-#         super().self()
-#
-#         # Wifi groupbox
-#         self.gbWifi = QGroupBox("WiFi")
-#         self.gbWifi.setCheckable(True)
-#         self.gbWifi.setChecked(False)
-#         flWifi = QFormLayout()
-#         self.leAP = QLineEdit()
-#         self.leAPPwd = QLineEdit()
-#         flWifi.addRow("SSID", self.leAP)
-#         flWifi.addRow("Password", self.leAPPwd)
-#         self.gbWifi.setLayout(flWifi)
-#         self.gbWifi.setVisible(False)
-#
-#         # Recovery Wifi groupbox
-#         self.gbRecWifi = QGroupBox("Recovery WiFi")
-#         self.gbRecWifi.setCheckable(True)
-#         self.gbRecWifi.setChecked(False)
-#         flRecWifi = QFormLayout()
-#         lbRecAP = QLabel("Recovery")
-#         lbRecAP.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
-#         lbRecAPPwd = QLabel("a1b2c3d4")
-#         lbRecAPPwd.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
-#
-#         flRecWifi.addRow("SSID", lbRecAP)
-#         flRecWifi.addRow("Password", lbRecAPPwd)
-#         self.gbRecWifi.setLayout(flRecWifi)
-#         self.gbRecWifi.setVisible(False)
-#
-#         # MQTT groupbox
-#         self.gbMQTT = QGroupBox("MQTT")
-#         self.gbMQTT.setCheckable(True)
-#         self.gbMQTT.setChecked(False)
-#         flMQTT = QFormLayout()
-#         self.leBroker = QLineEdit()
-#         self.sbPort = SpinBox()
-#         self.sbPort.setValue(1883)
-#         self.leTopic = QLineEdit()
-#         self.leMQTTUser = QLineEdit()
-#         self.leMQTTPass = QLineEdit()
-#         flMQTT.addRow("Host", self.leBroker)
-#         flMQTT.addRow("Port", self.sbPort)
-#         flMQTT.addRow("Topic", self.leTopic)
-#         flMQTT.addRow("User [optional]", self.leMQTTUser)
-#         flMQTT.addRow("Password [optional]", self.leMQTTPass)
-#         self.gbMQTT.setLayout(flMQTT)
-#         self.gbMQTT.setVisible(False)
-#
-#         # Module/template groupbox
-#         self.gbModule = GroupBoxV("Module/template")
-#         self.gbModule.setCheckable(True)
-#         self.gbModule.setChecked(False)
-#
-#         hl_m_rb = HLayout()
-#         self.rbModule = QRadioButton("Module")
-#         self.rbModule.setChecked(True)
-#         self.rbTemplate = QRadioButton("Template")
-#         hl_m_rb.addWidgets([self.rbModule, self.rbTemplate])
-#
-#         rbgModule = QButtonGroup(gbFW)
-#         rbgModule.addButton(self.rbModule, 0)
-#         rbgModule.addButton(self.rbTemplate, 1)
-#
-#         self.cbModule = QComboBox()
-#         for mod_id, mod_name in modules.items():
-#             self.cbModule.addItem(mod_name, mod_id)
-#
-#         self.leTemplate = QLineEdit()
-#         self.leTemplate.setVisible(False)
-#
-#         self.gbModule.addLayout(hl_m_rb)
-#         self.gbModule.addWidgets([self.cbModule, self.leTemplate])
-#         self.gbModule.setVisible(False)
-#
-#         # add all widgets to main layout
-#         #         vl_main_left.addWidgets([gbPort, gbFW, self.gbWifi, self.gbRecWifi, self.gbMQTT, self.gbModule])
-#         vl_main_left.addWidgets([gbPort, gbFW, self.gbWifi, self.gbRecWifi])
-#         #         vl_main_left.addWidgets([gbPort, gbFW])
-#         vl_main_right.addWidgets([self.gbMQTT, self.gbModule])
-
-    # def setModuleMode(self, radio):
-    #     self.module_mode = radio
-    #     self.cbModule.setVisible(not radio)
-    #     self.leTemplate.setVisible(radio)
-
-    # rbgModule.buttonClicked[int].connect(self.setModuleMode)
+dark_palette = QPalette()
+dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
+dark_palette.setColor(QPalette.WindowText, Qt.white)
+dark_palette.setColor(QPalette.Disabled, QPalette.WindowText, QColor(127, 127, 127))
+dark_palette.setColor(QPalette.Base, QColor(42, 42, 42))
+dark_palette.setColor(QPalette.AlternateBase, QColor(66, 66, 66))
+dark_palette.setColor(QPalette.ToolTipBase, Qt.white)
+dark_palette.setColor(QPalette.ToolTipText, Qt.white)
+dark_palette.setColor(QPalette.Text, Qt.white)
+dark_palette.setColor(QPalette.Disabled, QPalette.Text, QColor(127, 127, 127))
+dark_palette.setColor(QPalette.Dark, QColor(35, 35, 35))
+dark_palette.setColor(QPalette.Shadow, QColor(20, 20, 20))
+dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
+dark_palette.setColor(QPalette.ButtonText, Qt.white)
+dark_palette.setColor(QPalette.Disabled, QPalette.ButtonText, QColor(127, 127, 127))
+dark_palette.setColor(QPalette.BrightText, Qt.red)
+dark_palette.setColor(QPalette.Link, QColor(42, 130, 218))
+dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+dark_palette.setColor(QPalette.Disabled, QPalette.Highlight, QColor(80, 80, 80))
+dark_palette.setColor(QPalette.HighlightedText, Qt.white)
+dark_palette.setColor(QPalette.Disabled, QPalette.HighlightedText, QColor(127, 127, 127))

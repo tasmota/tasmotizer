@@ -2546,12 +2546,13 @@ def chip_id(esp, args):
 
 
 def erase_flash(esp, args):
-    sw.erase_start.emit()
-    print('Erasing flash (this may take a while)...')
-    t = time.time()
-    esp.erase_flash()
-    print('Chip erase completed successfully in %.1fs' % (time.time() - t))
-    sw.erase_finished.emit()
+    if sw.continueFlag():
+        sw.erase_start.emit()
+        print('Erasing flash (this may take a while)...')
+        t = time.time()
+        esp.erase_flash()
+        print('Chip erase completed successfully in %.1fs' % (time.time() - t))
+        sw.erase_finished.emit()
 
 
 def erase_region(esp, args):
