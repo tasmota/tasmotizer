@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 from PyQt5.QtCore import QUrl, Qt, QThread, QObject, pyqtSignal, pyqtSlot, QSettings, QTimer, QSize, QIODevice
-from PyQt5.QtGui import QPalette, QColor, QPixmap
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 from PyQt5.QtSerialPort import QSerialPortInfo, QSerialPort
 from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QPushButton, QComboBox, QWidget, QCheckBox, QRadioButton, \
@@ -440,7 +440,7 @@ class Tasmotizer(QDialog):
         self.nrRelease = QNetworkRequest(QUrl("http://thehackbox.org/tasmota/release/release.php"))
         self.nrDevelopment = QNetworkRequest(QUrl("http://thehackbox.org/tasmota/development.php"))
 
-        self.setWindowTitle("Tasmotizer")
+        self.setWindowTitle("Tasmotizer 1.0")
         self.setMinimumWidth(480)
 
         self.mode = 0  # BIN file
