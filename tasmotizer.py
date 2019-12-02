@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 
 import serial
@@ -13,6 +15,8 @@ from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkRepl
 from PyQt5.QtSerialPort import QSerialPortInfo, QSerialPort
 from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QPushButton, QComboBox, QWidget, QCheckBox, QRadioButton, \
     QButtonGroup, QFileDialog, QProgressBar, QLabel, QMessageBox, QDialogButtonBox, QGroupBox, QFormLayout
+
+import banner
 
 from gui import HLayout, VLayout, GroupBoxH, GroupBoxV, SpinBox, dark_palette
 
@@ -456,7 +460,7 @@ class Tasmotizer(QDialog):
 
         # Banner
         banner = QLabel()
-        banner.setPixmap(QPixmap("banner.png"))
+        banner.setPixmap(QPixmap(":/banner.png"))
         vl.addWidget(banner)
 
         # Port groupbox
@@ -669,7 +673,7 @@ class Tasmotizer(QDialog):
         self.old_pos = e.globalPos()
 
 
-if __name__ == '__main__':
+def main():
     app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_DisableWindowContextHelpButton)
     app.setQuitOnLastWindowClosed(True)
@@ -678,8 +682,11 @@ if __name__ == '__main__':
     app.setPalette(dark_palette)
     app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
     app.setStyle("Fusion")
-    
+
     mw = Tasmotizer()
     mw.show()
 
     sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    main()
