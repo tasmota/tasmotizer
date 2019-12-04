@@ -16,7 +16,7 @@ The full-featured flashing tool for Tasmota. With the great [ESPtool](https://gi
  
 ## Installation and how to run
 
- - Option 1: download and use any of our released binary versions available for Linux, Windows (thanks @Jason2866)
+ - Option 1: [get Windows  standalone executable](https://github.com/tasmota/tasmotizer/releases) (thanks @Jason2866)
  
  - Option 2: `pip3 install tasmotizer` and then simply run `tasmotizer.py` from the shell/command line
  
