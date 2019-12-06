@@ -2,9 +2,9 @@
 <img src=https://user-images.githubusercontent.com/11555742/69891714-ec14ca00-12fe-11ea-9140-92842fa1bff9.jpg width=500>
 </p>
 
-![GitHub All Releases](https://img.shields.io/github/downloads/tasmota/tasmotizer/total?style=for-the-badge)
-![https://pypi.org/project/tasmotizer/](https://img.shields.io/pypi/dw/tasmotizer?logo=pypi&style=for-the-badge)
-![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tasmota/tasmotizer?style=for-the-badge)
+[![GitHub All Releases](https://img.shields.io/github/downloads/tasmota/tasmotizer/total?style=for-the-badge)](https://github.com/tasmota/tasmotizer/releases)
+[![https://pypi.org/project/tasmotizer/](https://img.shields.io/pypi/dw/tasmotizer?logo=pypi&style=for-the-badge)](https://pypi.org/project/tasmotizer)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tasmota/tasmotizer?style=for-the-badge)](https://github.com/tasmota/tasmotizer/releases)
 
 The full-featured flashing tool for Tasmota. With the great [ESPtool](https://github.com/espressif/esptool) from Espressif under the hood, and all required settings by default.
 
