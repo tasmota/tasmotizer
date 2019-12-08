@@ -13,10 +13,10 @@ else:
     entry_points = None
 
 setup(
-    name='tasmotizer-jziolkowski',
-    version="1.0",
+    name='tasmotizer',
+    version="1.1",
     url='https://github.com/tasmota/tasmotizer',
-    py_modules=['tasmotizer', 'gui', 'esptool', 'banner'],
+    py_modules=['tasmotizer', 'gui', 'tasmotizer-esptool', 'banner'],
     license='GPLv3',
     author='jziolkowski',
     author_email='jacek@ziolkowscy.com',

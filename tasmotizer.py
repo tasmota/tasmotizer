@@ -4,7 +4,7 @@ import sys
 
 import serial
 
-import esptool
+import tasmotizer_esptool as esptool
 import json
 
 from datetime import datetime
@@ -216,8 +216,8 @@ class SendConfigDialog(QDialog):
         self.gbMQTT.setChecked(self.settings.value("gbMQTT", False, bool))
         self.leBroker.setText(self.settings.value("Broker"))
         self.sbPort.setValue(self.settings.value("Port", 1883, int))
-        self.leTopic.setText(self.settings.value("Topic"))
-        self.leFullTopic.setText(self.settings.value("FullTopic"))
+        self.leTopic.setText(self.settings.value("Topic", "tasmota"))
+        self.leFullTopic.setText(self.settings.value("FullTopic", "%prefix%/%topic%/"))
         self.leFriendlyName.setText(self.settings.value("FriendlyName"))
         self.leMQTTUser.setText(self.settings.value("MQTTUser"))
 
