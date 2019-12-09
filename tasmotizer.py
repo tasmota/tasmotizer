@@ -299,6 +299,7 @@ class FlashingDialog(QDialog):
 
     def __init__(self, parent):
         super().__init__()
+        self.setWindowTitle("Tasmotizing...")
 
         esptool.sw.read_start.connect(self.read_start)
         esptool.sw.read_progress.connect(self.read_progress)
