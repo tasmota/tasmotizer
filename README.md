@@ -26,7 +26,10 @@ The full-featured flashing tool for Tasmota. With the great [ESPtool](https://gi
  - Option 2: `pip3 install tasmotizer` and then simply run `tasmotizer.py` from the shell/command line
  
  - Option 3: Clone the repo, `pip3 install PyQt5 pyserial` followed by `python3 tasmotizer.py ` and flash away!
+ 
+## Tasmotizer video tutorial 
    
+  Tasmota and Tasmotizer - https://youtu.be/_UnI6cnzF3k 
  
 ## Screenshots
 
