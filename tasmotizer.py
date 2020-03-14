@@ -14,27 +14,14 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 from PyQt5.QtSerialPort import QSerialPortInfo, QSerialPort
 from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QPushButton, QComboBox, QWidget, QCheckBox, QRadioButton, \
-    QButtonGroup, QFileDialog, QProgressBar, QLabel, QMessageBox, QDialogButtonBox, QGroupBox, QFormLayout
+    QButtonGroup, QFileDialog, QProgressBar, QLabel, QMessageBox, QDialogButtonBox, QGroupBox, QFormLayout, QTabWidget, \
+    QStatusBar
 
 import banner
 
-from gui import HLayout, VLayout, GroupBoxH, GroupBoxV, SpinBox, dark_palette
+from gui import HLayout, VLayout, GroupBoxH, GroupBoxV, dark_palette
+from sendconfig import SendConfigDialog
 
-modules = {"1": "Sonoff Basic", "2": "Sonoff RF", "4": "Sonoff TH", "5": "Sonoff Dual", "39": "Sonoff Dual R2",
-           "6": "Sonoff Pow", "43": "Sonoff Pow R2", "7": "Sonoff 4CH", "23": "Sonoff 4CH Pro", "41": "Sonoff S31",
-           "8": "Sonoff S2X", "10": "Sonoff Touch", "28": "Sonoff T1 1CH", "29": "Sonoff T1 2CH", "30": "Sonoff T1 3CH",
-           "11": "Sonoff LED", "22": "Sonoff BN-SZ", "70": "Sonoff L1", "26": "Sonoff B1", "9": "Slampher",
-           "21": "Sonoff SC", "44": "Sonoff iFan02", "71": "Sonoff iFan03", "25": "Sonoff Bridge", "3": "Sonoff SV",
-           "19": "Sonoff Dev", "12": "1 Channel", "13": "4 Channel", "14": "Motor C/AC", "15": "ElectroDragon",
-           "16": "EXS Relay(s)", "31": "Supla Espablo", "35": "Luani HVIO", "33": "Yunshan Relay", "17": "WiOn",
-           "46": "Shelly 1", "47": "Shelly 2", "45": "BlitzWolf SHP", "52": "Teckin", "59": "Teckin US",
-           "53": "AplicWDP303075", "55": "Gosund SP1 v23", "65": "Luminea ZX2820", "57": "SK03 Outdoor",
-           "63": "Digoo DG-SP202", "64": "KA10", "67": "SP10", "68": "WAGA CHCZ02MB", "49": "Neo Coolcam",
-           "51": "OBI Socket", "61": "OBI Socket 2", "60": "Manzoku strip", "50": "ESP Switch", "54": "Tuya MCU",
-           "56": "ARMTR Dimmer", "58": "PS-16-DZ", "20": "H801", "34": "MagicHome", "37": "Arilux LC01",
-           "40": "Arilux LC06", "38": "Arilux LC11", "42": "Zengge WF017", "24": "Huafan SS", "36": "KMC 70011",
-           "27": "AiLight", "48": "Xiaomi Philips", "69": "SYF05", "62": "YTF IR Bridge", "32": "Witty Cloud",
-           "18": "Generic"}
 
 class StdOut(object):
     def __init__(self, processor):
@@ -92,207 +79,6 @@ class ESPWorker(QObject):
     def stop(self):
         self.continue_flag = False
         esptool.sw.setContinueFlag(False)
-
-
-class SendConfigDialog(QDialog):
-
-    def __init__(self):
-        super().__init__()
-        self.setMinimumWidth(640)
-        self.setWindowTitle("Send configuration to device")
-        self.settings = QSettings("tasmotizer.cfg", QSettings.IniFormat)
-
-        self.commands = None
-        self.module_mode = 0
-
-        self.createUI()
-        self.loadSettings()
-
-    def createUI(self):
-        vl = VLayout()
-        self.setLayout(vl)
-
-        # Wifi groupbox
-        self.gbWifi = QGroupBox("WiFi")
-        self.gbWifi.setCheckable(True)
-        self.gbWifi.setChecked(False)
-        flWifi = QFormLayout()
-        self.leAP = QLineEdit()
-        self.leAPPwd = QLineEdit()
-        self.leAPPwd.setEchoMode(QLineEdit.Password)
-        flWifi.addRow("SSID", self.leAP)
-        flWifi.addRow("Password", self.leAPPwd)
-        self.gbWifi.setLayout(flWifi)
-
-        # Recovery Wifi groupbox
-        self.gbRecWifi = QGroupBox("Recovery WiFi")
-        self.gbRecWifi.setCheckable(True)
-        self.gbRecWifi.setChecked(False)
-        flRecWifi = QFormLayout()
-        lbRecAP = QLabel("Recovery")
-        lbRecAP.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
-        lbRecAPPwd = QLabel("a1b2c3d4")
-        lbRecAPPwd.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
-
-        flRecWifi.addRow("SSID", lbRecAP)
-        flRecWifi.addRow("Password", lbRecAPPwd)
-        self.gbRecWifi.setLayout(flRecWifi)
-
-        vl_wifis = VLayout(0)
-        vl_wifis.addWidgets([self.gbWifi, self.gbRecWifi])
-
-        # MQTT groupbox
-        self.gbMQTT = QGroupBox("MQTT")
-        self.gbMQTT.setCheckable(True)
-        self.gbMQTT.setChecked(False)
-        flMQTT = QFormLayout()
-        self.leBroker = QLineEdit()
-        self.sbPort = SpinBox()
-        self.sbPort.setValue(1883)
-        self.leTopic = QLineEdit()
-        self.leTopic.setText("tasmota")
-        self.leFullTopic = QLineEdit()
-        self.leFullTopic.setText("%prefix%/%topic%/")
-        self.leFriendlyName = QLineEdit()
-        self.leMQTTUser = QLineEdit()
-        self.leMQTTPass = QLineEdit()
-        self.leMQTTPass.setEchoMode(QLineEdit.Password)
-
-        flMQTT.addRow("Host", self.leBroker)
-        flMQTT.addRow("Port", self.sbPort)
-        flMQTT.addRow("Topic", self.leTopic)
-        flMQTT.addRow("FullTopic", self.leFullTopic)
-        flMQTT.addRow("FriendlyName", self.leFriendlyName)
-        flMQTT.addRow("User [optional]", self.leMQTTUser)
-        flMQTT.addRow("Password [optional]", self.leMQTTPass)
-        self.gbMQTT.setLayout(flMQTT)
-
-        # Module/template groupbox
-        self.gbModule = GroupBoxV("Module/template")
-        self.gbModule.setCheckable(True)
-        self.gbModule.setChecked(False)
-
-        hl_m_rb = HLayout()
-        self.rbModule = QRadioButton("Module")
-        self.rbModule.setChecked(True)
-        self.rbTemplate = QRadioButton("Template")
-        hl_m_rb.addWidgets([self.rbModule, self.rbTemplate])
-
-        self.rbgModule = QButtonGroup(self.gbModule)
-        self.rbgModule.addButton(self.rbModule, 0)
-        self.rbgModule.addButton(self.rbTemplate, 1)
-
-        self.cbModule = QComboBox()
-        for mod_id, mod_name in modules.items():
-            self.cbModule.addItem(mod_name, mod_id)
-
-        self.leTemplate = QLineEdit()
-        self.leTemplate.setPlaceholderText("Paste template string here")
-        self.leTemplate.setVisible(False)
-
-        self.gbModule.addLayout(hl_m_rb)
-        self.gbModule.addWidgets([self.cbModule, self.leTemplate])
-        self.rbgModule.buttonClicked[int].connect(self.setModuleMode)
-
-        # layout all widgets
-        hl_wifis_mqtt = HLayout(0)
-        hl_wifis_mqtt.addLayout(vl_wifis)
-        hl_wifis_mqtt.addWidget(self.gbMQTT)
-
-        vl.addLayout(hl_wifis_mqtt)
-        vl.addWidget(self.gbModule)
-
-        btns = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Close)
-        btns.accepted.connect(self.accept)
-        btns.rejected.connect(self.reject)
-        vl.addWidget(btns)
-
-    def loadSettings(self):
-        self.gbWifi.setChecked(self.settings.value("gbWifi", False, bool))
-        self.leAP.setText(self.settings.value("AP"))
-
-        self.gbRecWifi.setChecked(self.settings.value("gbRecWifi", False, bool))
-
-        self.gbMQTT.setChecked(self.settings.value("gbMQTT", False, bool))
-        self.leBroker.setText(self.settings.value("Broker"))
-        self.sbPort.setValue(self.settings.value("Port", 1883, int))
-        self.leTopic.setText(self.settings.value("Topic", "tasmota"))
-        self.leFullTopic.setText(self.settings.value("FullTopic", "%prefix%/%topic%/"))
-        self.leFriendlyName.setText(self.settings.value("FriendlyName"))
-        self.leMQTTUser.setText(self.settings.value("MQTTUser"))
-
-        self.gbModule.setChecked(self.settings.value("gbModule", False, bool))
-
-        module_mode = self.settings.value("ModuleMode", 0, int)
-        for b in self.rbgModule.buttons():
-            if self.rbgModule.id(b) == module_mode:
-                b.setChecked(True)
-                self.setModuleMode(module_mode)
-        self.cbModule.setCurrentText(self.settings.value("Module", "Generic"))
-        self.leTemplate.setText(self.settings.value("Template"))
-
-    def setModuleMode(self, radio):
-        self.module_mode = radio
-        self.cbModule.setVisible(not radio)
-        self.leTemplate.setVisible(radio)
-
-    def accept(self):
-        ok = True
-
-        if self.gbWifi.isChecked() and (len(self.leAP.text()) == 0 or len(self.leAPPwd.text()) == 0):
-            ok = False
-            QMessageBox.warning(self, "WiFi details incomplete", "Input WiFi AP and Password")
-
-        if self.gbMQTT.isChecked() and not self.leBroker.text():
-            ok = False
-            QMessageBox.warning(self, "MQTT details incomplete", "Input broker hostname")
-
-        if self.module_mode == 1 and len(self.leTemplate.text()) == 0:
-            ok = False
-            QMessageBox.warning(self, "Template string missing", "Input template string")
-
-        if ok:
-            backlog = []
-
-            if self.gbWifi.isChecked():
-                backlog.extend(["ssid1 {}".format(self.leAP.text()), "password1 {}".format(self.leAPPwd.text())])
-
-            if self.gbRecWifi.isChecked():
-                backlog.extend(["ssid2 Recovery", "password2 a1b2c3d4"])
-
-            if self.gbMQTT.isChecked():
-                backlog.extend(["mqtthost {}".format(self.leBroker.text()), "mqttport {}".format(self.sbPort.value())])
-
-                topic = self.leTopic.text()
-                if topic and topic != "tasmota":
-                    backlog.append("topic {}".format(topic))
-
-                fulltopic = self.leFullTopic.text()
-                if fulltopic and fulltopic != "%prefix%/%topic%/":
-                    backlog.append("fulltopic {}".format(fulltopic))
-
-                fname = self.leFriendlyName.text()
-                if fname:
-                    backlog.append("friendlyname {}".format(fname))
-
-                mqttuser = self.leMQTTUser.text()
-                if mqttuser:
-                    backlog.append("mqttuser {}".format(mqttuser))
-
-                    mqttpassword = self.leMQTTPass.text()
-                    if mqttpassword:
-                        backlog.append("mqttpassword {}".format(mqttpassword))
-
-            if self.gbModule.isChecked():
-                if self.module_mode == 0:
-                    backlog.append("module {}".format(self.cbModule.currentData()))
-
-                elif self.module_mode == 1:
-                    backlog.extend(["template {}".format(self.leTemplate.text()), "module 0"])
-
-            self.commands = "backlog {}\n".format(";".join(backlog))
-
-            self.done(QDialog.Accepted)
 
 
 class FlashingDialog(QDialog):
@@ -436,12 +222,13 @@ class Tasmotizer(QDialog):
     def __init__(self):
         super().__init__()
         self.settings = QSettings("tasmotizer.cfg", QSettings.IniFormat)
+        self.sb = QStatusBar()
 
         self.nam = QNetworkAccessManager()
         self.nrRelease = QNetworkRequest(QUrl("http://thehackbox.org/tasmota/release/release.php"))
         self.nrDevelopment = QNetworkRequest(QUrl("http://thehackbox.org/tasmota/development.php"))
 
-        self.setWindowTitle("Tasmotizer 1.1")
+        self.setWindowTitle("Tasmotizer 1.3")
         self.setMinimumWidth(480)
 
         self.mode = 0  # BIN file
@@ -511,7 +298,18 @@ class Tasmotizer(QDialog):
         self.cbErase.setToolTip("Erasing previous firmware ensures all flash regions are clean for Tasmota, which prevents many unexpected issues.\nIf unsure, leave enabled.")
         self.cbErase.setChecked(True)
 
-        gbFW.addWidgets([self.wFile, self.cbHackboxBin, self.cbBackup, self.cbErase])
+        self.pbManualBackup = QPushButton("Backup")
+        self.pbManualBackup.clicked.connect(self.backup)
+
+        gbFW.addWidgets([self.wFile, self.cbHackboxBin])
+
+        hl_backup = HLayout(0)
+        hl_backup.addWidget(self.cbBackup)
+        hl_backup.addSpacer()
+        # hl_backup.addWidget(self.pbManualBackup)
+
+        gbFW.addLayout(hl_backup)
+        gbFW.addWidget(self.cbErase)
 
         # Buttons
         self.pbTasmotize = QPushButton("Tasmotize!")
@@ -531,6 +329,7 @@ class Tasmotizer(QDialog):
 
         vl.addWidgets([gbPort, gbFW])
         vl.addLayout(hl_btns)
+        vl.addWidget(self.sb)
 
         pbRefreshPorts.clicked.connect(self.refreshPorts)
         rbgFW.buttonClicked[int].connect(self.setBinMode)
@@ -541,12 +340,15 @@ class Tasmotizer(QDialog):
         self.pbConfig.clicked.connect(self.send_config)
         self.pbQuit.clicked.connect(self.reject)
 
+        self.sb.showMessage('Tasmotizer is ready!')
+
     def refreshPorts(self):
         self.cbxPort.clear()
         ports = reversed(sorted(port.portName() for port in QSerialPortInfo.availablePorts()))
         for p in ports:
             port = QSerialPortInfo(p)
             self.cbxPort.addItem(port.portName(), port.systemLocation())
+        self.sb.showMessage('Refreshed ports list', 3000)
 
     def setBinMode(self, radio):
         self.mode = radio
@@ -607,40 +409,20 @@ class Tasmotizer(QDialog):
     def send_config(self):
         dlg = SendConfigDialog()
         if dlg.exec_() == QDialog.Accepted:
-            if dlg.commands:
-                try:
-                    self.port = QSerialPort(self.cbxPort.currentData())
-                    self.port.setBaudRate(115200)
-                    self.port.open(QIODevice.ReadWrite)
-                    bytes_sent = self.port.write(bytes(dlg.commands, 'utf8'))
-                except Exception as e:
-                    QMessageBox.critical(self, "Port error", e)
-                else:
-                    self.settings.setValue("gbWifi", dlg.gbWifi.isChecked())
-                    self.settings.setValue("AP", dlg.leAP.text())
+            try:
+                self.port = QSerialPort(self.cbxPort.currentData())
+                self.port.setBaudRate(115200)
+                self.port.open(QIODevice.ReadWrite)
+                commands = f'backlog {";".join(dlg.commands)}'
+                bytes_sent = self.port.write(bytes(commands, 'utf8'))
+                QMessageBox.information(self, "Done",
+                                        "Configuration sent ({} bytes)\nDevice will restart.".format(bytes_sent))
+            except Exception as e:
+                QMessageBox.critical(self, "Port error", e)
 
-                    self.settings.setValue("gbRecWifi", dlg.gbRecWifi.isChecked())
-
-                    self.settings.setValue("gbMQTT", dlg.gbMQTT.isChecked())
-                    self.settings.setValue("Broker", dlg.leBroker.text())
-                    self.settings.setValue("Port", dlg.sbPort.value())
-                    self.settings.setValue("Topic", dlg.leTopic.text())
-                    self.settings.setValue("FullTopic", dlg.leFullTopic.text())
-                    self.settings.setValue("FriendlyName", dlg.leFriendlyName.text())
-                    self.settings.setValue("MQTTUser", dlg.leMQTTUser.text())
-
-                    self.settings.setValue("gbModule", dlg.gbModule.isChecked())
-                    self.settings.setValue("ModuleMode", dlg.rbgModule.checkedId())
-                    self.settings.setValue("Module", dlg.cbModule.currentText())
-                    self.settings.setValue("Template", dlg.leTemplate.text())
-                    self.settings.sync()
-
-                    QMessageBox.information(self, "Done", "Configuration sent ({} bytes)\nDevice will restart.".format(bytes_sent))
-                finally:
-                    if self.port.isOpen():
-                        self.port.close()
-            else:
-                QMessageBox.information(self, "Done", "Nothing to send")
+            finally:
+                if self.port.isOpen():
+                    self.port.close()
 
     def start_process(self):
         ok = True
@@ -665,6 +447,11 @@ class Tasmotizer(QDialog):
                 else:
                     QMessageBox.critical(self, "Flashing aborted", "Flashing process has been aborted by the user.")
 
+    def backup(self):
+        dlg = FlashingDialog(self)
+        if dlg.exec_() == QDialog.Accepted:
+            QMessageBox.information(self, "Done", "Backup successful!")
+
     def mousePressEvent(self, e):
         self.old_pos = e.globalPos()
 
@@ -688,6 +475,7 @@ def main():
     mw.show()
 
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     main()

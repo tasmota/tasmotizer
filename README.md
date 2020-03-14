@@ -5,8 +5,19 @@
 [![GitHub All Releases](https://img.shields.io/github/downloads/tasmota/tasmotizer/total?style=for-the-badge)](https://github.com/tasmota/tasmotizer/releases)
 [![https://pypi.org/project/tasmotizer/](https://img.shields.io/pypi/dw/tasmotizer?logo=pypi&style=for-the-badge)](https://pypi.org/project/tasmotizer)
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tasmota/tasmotizer?style=for-the-badge)](https://github.com/tasmota/tasmotizer/releases)
+<a href="https://www.buymeacoffee.com/eYmkLXO" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
 
 The full-featured flashing tool for Tasmota. With the great [ESPtool](https://github.com/espressif/esptool) from Espressif under the hood, and all required settings by default.
+
+## New in 1.3
+
+ - Rewritten and redesigned 'Send config' dialog. Now more readable with even more options!
+
+ - Double-click a config section on the list to toggle its selection, if you don't feel like sniping the checkboxes
+ 
+ - Configuration file is now saved in user directories: `~/.config/tasmota` (Unix/Linux), `C:\Users\User Name\AppData\Roaming\tasmota` (Windows)   
+ 
+ - You can create `templates.txt` in the above directory and fill it with your often used templates (one full template string per line) to easily select them in config dialog
 
 ## Features
 
