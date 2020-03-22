@@ -39,7 +39,7 @@ class ESPWorker(QObject):
     port_error = pyqtSignal(str)
     backup_start = pyqtSignal()
 
-    def __init__(self, port, bin_file, backup, erase):
+    def __init__(self, port, bin_file, backup, erase, verify):
         super().__init__()
 
         self.port = port
@@ -196,7 +196,7 @@ class FlashingDialog(QDialog):
     def run_esptool(self):
         self.espthread = QThread()
         self.espworker = ESPWorker(self.parent.cbxPort.currentData(), self.bin_file, self.parent.cbBackup.isChecked(),
-                                   self.parent.cbErase.isChecked())
+                                   self.parent.cbErase.isChecked(), self.parent.cbVerify.isChecked())
 
         self.espworker.port_error.connect(self.error)
         self.espworker.moveToThread(self.espthread)
