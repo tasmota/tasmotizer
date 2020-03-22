@@ -57,10 +57,10 @@ class ESPWorker(QObject):
         command_write = ["write_flash", "--flash_mode", "dout", "0x00000", self.bin_file]
 
         if self.erase:
-            command_write.append("--erase-all")
+            command_write.extend(["--erase-all"])
 
         if self.backup and self.continue_flag:
-            command = command_base + command_backup
+            command = command_base + command_backup + ["--after no_reset"]
             try:
                 self.backup_start.emit()
                 esptool.main(command)
@@ -68,12 +68,15 @@ class ESPWorker(QObject):
                 self.port_error.emit("{}".format(e))
 
         if self.continue_flag:
-            command = command_base + command_write
+            command = command_base + command_write + ["--after soft_reset"]
+            if self.verify:
+                command += ["verify"]
             try:
                 esptool.main(command)
                 self.finished.emit()
             except esptool.FatalError or serial.SerialException as e:
                 self.port_error.emit("{}".format(e))
+
 
     @pyqtSlot()
     def stop(self):
@@ -228,8 +231,8 @@ class Tasmotizer(QDialog):
         self.nrRelease = QNetworkRequest(QUrl("http://thehackbox.org/tasmota/release/release.php"))
         self.nrDevelopment = QNetworkRequest(QUrl("http://thehackbox.org/tasmota/development.php"))
 
-        self.setWindowTitle("Tasmotizer 1.3")
-        self.setMinimumWidth(480)
+        self.setWindowTitle("Tasmotizer 1.2")
+        self.setFixedSize(QSize(480, 430))
 
         self.mode = 0  # BIN file
         self.bin_file = ""
@@ -252,13 +255,19 @@ class Tasmotizer(QDialog):
         vl.addWidget(banner)
 
         # Port groupbox
-        gbPort = GroupBoxH("Select port", 3)
+        gbPort = GroupBoxV("Select port", 3)
+        hl_port = HLayout(0)
         self.cbxPort = QComboBox()
         pbRefreshPorts = QPushButton("Refresh")
-        gbPort.addWidget(self.cbxPort)
-        gbPort.addWidget(pbRefreshPorts)
-        gbPort.layout().setStretch(0, 4)
-        gbPort.layout().setStretch(1, 1)
+        hl_port.addWidget(self.cbxPort)
+        hl_port.addWidget(pbRefreshPorts)
+        hl_port.layout().setStretch(0, 4)
+        hl_port.layout().setStretch(1, 1)
+        link = QLabel("<a href=https://tasmota.github.io/docs/#/installation/Prerequisites?id=serial-to-usb-adapter>Make sure to read these important notes on USB adapters!</a>")
+        link.setOpenExternalLinks(True)
+        link.setAlignment(Qt.AlignCenter)
+        gbPort.addLayout(hl_port)
+        gbPort.addWidget(link)
 
         # Firmware groupbox
         gbFW = GroupBoxV("Select image", 3)
@@ -298,6 +307,10 @@ class Tasmotizer(QDialog):
         self.cbErase.setToolTip("Erasing previous firmware ensures all flash regions are clean for Tasmota, which prevents many unexpected issues.\nIf unsure, leave enabled.")
         self.cbErase.setChecked(True)
 
+        self.cbVerify = QCheckBox("Verify after flashing")
+        self.cbVerify.setToolTip(
+            "This <b>doesn't</b> give 100% certainty that flash  is correct if you used a weak-powered USB adapter based on FTDI, CP21xx, etc.")
+
         self.pbManualBackup = QPushButton("Backup")
         self.pbManualBackup.clicked.connect(self.backup)
 
@@ -309,7 +322,7 @@ class Tasmotizer(QDialog):
         # hl_backup.addWidget(self.pbManualBackup)
 
         gbFW.addLayout(hl_backup)
-        gbFW.addWidget(self.cbErase)
+        gbFW.addWidgets([self.cbErase, self.cbVerify])
 
         # Buttons
         self.pbTasmotize = QPushButton("Tasmotize!")

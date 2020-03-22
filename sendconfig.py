@@ -85,7 +85,7 @@ configs = {
                 'desc': 'Topic',
                 'widget': QLineEdit,
                 'required': True,
-                'default': 'tasmota',
+                'default': 'tasmota_%06X',
             },
             'fulltopic': {
                 'desc': 'Fulltopic',
@@ -136,6 +136,10 @@ configs = {
         {
             'setoption19': {
                 'desc': 'Enable HomeAssistant auto-discovery (SetOption19)',
+                'widget': QCheckBox,
+            },
+            'setoption52': {
+                'desc': 'Display optional time offset from UTC in JSON payloads (SetOption52)',
                 'widget': QCheckBox,
             },
             'setoption65': {
