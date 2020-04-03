@@ -67,7 +67,7 @@ class ESPWorker(QObject):
         esptool.sw.setContinueFlag(True)
         command_base = ["--chip", "esp8266", "--port", self.port, "--baud", "115200"]
         command_backup = ["read_flash", "0x00000", "0x100000", "backup_{}.bin".format(datetime.now().strftime("%Y%m%d_%H%M%S"))]
-        command_write = ["write_flash", "--flash_mode", "dout", "0x00000", self.bin_file]
+        command_write = ["write_flash", "--flash_size", "1MB", "--flash_mode", "dout", "0x00000", self.bin_file]
 
         if self.erase:
             command_write.append("--erase-all")
@@ -441,7 +441,7 @@ class Tasmotizer(QDialog):
         self.nrRelease = QNetworkRequest(QUrl("http://thehackbox.org/tasmota/release/release.php"))
         self.nrDevelopment = QNetworkRequest(QUrl("http://thehackbox.org/tasmota/development.php"))
 
-        self.setWindowTitle("Tasmotizer 1.1")
+        self.setWindowTitle("Tasmotizer 1.1a")
         self.setMinimumWidth(480)
 
         self.mode = 0  # BIN file
