@@ -120,8 +120,11 @@ class SendConfigDialog(QDialog):
         self.leAP = QLineEdit()
         self.leAPPwd = QLineEdit()
         self.leAPPwd.setEchoMode(QLineEdit.Password)
+        self.leAPPwdSave = QCheckBox("Save Password")
+        self.leAPPwdSave.setChecked(False)
         flWifi.addRow("SSID", self.leAP)
         flWifi.addRow("Password", self.leAPPwd)
+        flWifi.addRow(self.leAPPwdSave)
         self.gbWifi.setLayout(flWifi)
 
         # Recovery Wifi groupbox
@@ -210,6 +213,8 @@ class SendConfigDialog(QDialog):
     def loadSettings(self):
         self.gbWifi.setChecked(self.settings.value("gbWifi", False, bool))
         self.leAP.setText(self.settings.value("AP"))
+        self.leAPPwd.setText(self.settings.value("APPwd"))
+        self.leAPPwdSave.setChecked(self.settings.value("APPwdSave",False, bool))
 
         self.gbRecWifi.setChecked(self.settings.value("gbRecWifi", False, bool))
 
@@ -618,6 +623,13 @@ class Tasmotizer(QDialog):
                 else:
                     self.settings.setValue("gbWifi", dlg.gbWifi.isChecked())
                     self.settings.setValue("AP", dlg.leAP.text())
+                    self.settings.setValue("APPwdSave", dlg.leAPPwdSave.isChecked())
+                    # save password if user requests it
+                    if dlg.leAPPwdSave.isChecked(): 
+                        self.settings.setValue("APPwd", dlg.leAPPwd.text())
+                    else:
+                        self.settings.remove("APPwd")
+
 
                     self.settings.setValue("gbRecWifi", dlg.gbRecWifi.isChecked())
 
