@@ -26,8 +26,17 @@ configs = {
                 'desc': 'Password1',
                 'widget': Password,
                 'required': True,
-                'keep': False,
+# reference on QCheckBox
+                'keep': 'password1save',
             },
+            'password1save': {
+                'desc': 'Save Password',
+                'default': False,
+                'widget': QCheckBox,
+# this is not a backlog command
+                'command': False,
+                'keep': True,
+                },
         },
     'Recovery WiFi':
         {
@@ -168,17 +177,21 @@ class ConfigWidget(QWidget):
             setattr(self, command, widget)
 
             value = self.settings.value(command, settings.get('default'))
+            print(command,"=",value)
             if value:
                 if isinstance(widget, SpinBox):
                     widget.setValue(int(value))
 
+                elif isinstance(widget, QCheckBox):
+                    widget.setChecked(bool(value))
                 elif isinstance(widget, TemplateComboBox):
                     user_templates_file = os.path.sep.join([os.path.dirname(self.settings.fileName()), 'templates.txt'])
                     if os.path.exists(user_templates_file):
                         with open(user_templates_file, 'r') as user_tpl:
                             for entry in user_tpl.readlines():
                                 if len(entry) > 1:
-                                    entry = entry.rstrip('\n')
+                                    # strip carriage return and newline
+                                    entry = entry.rstrip('\r\n')
                                     widget.addItem(entry)
                     widget.setCurrentText(value)
 
@@ -200,19 +213,41 @@ class ConfigWidget(QWidget):
             elif isinstance(widget, Modules):
                 value = widget.currentData()
             elif isinstance(widget, QCheckBox):
-                value = 1 if widget.isChecked() else 0
+                value = True if widget.isChecked() else False
             elif isinstance(widget, TemplateComboBox):
-                value = widget.currentText().rstrip('\n')
+                # strip carriage return and newline
+                value = widget.currentText().rstrip('\r\n')
             else:
-                value = widget.text()
+                # strip carriage return and newline
+                value = widget.text().rstrip('\r\n')
 
             if settings.get('required') and not value:
                 raise MissingDetailException(f'{self.section} setting missing', f"{settings['desc']} is required.")
 
             if value != settings.get('default') or isinstance(widget, QLabel):
-                commands.append(f'{command} {value}')
-                if settings.get('keep', True):
+                if settings.get('command',True):
+                    # this setting is a backlog command
+                    commands.append(f'{command} {value}')
+                keep = settings.get('keep',True)
+                if isinstance(keep,bool) and keep:
+                    # keep is boolean true
                     self.settings.setValue(command, value)
+                elif isinstance(keep,str) and keep:
+                    # TODO: tasmotizer will crash if the reference is no QCheckBox
+                    reference_checkbox = getattr(self, keep)
+                    reference_keep = True if reference_checkbox.isChecked() else False
+                    if reference_keep: 
+                        # checked: save setting
+                        self.settings.setValue(command, value)
+                    else:
+                        # unchecked: remove setting (usually password)
+                        self.settings.remove(command)
+                else:
+                    # not false or keep is empty
+                    self.settings.remove(command)
+            else:
+                # remove default settings from settings file
+                self.settings.remove(command)
 
         return commands
 
