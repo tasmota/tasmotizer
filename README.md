@@ -9,7 +9,7 @@
 
 The full-featured flashing tool for Tasmota. With the great [ESPtool](https://github.com/espressif/esptool) from Espressif under the hood, and all required settings by default.
 
-## New in 1.3
+## New in 1.2
 
  - Rewritten and redesigned 'Send config' dialog. Now more readable with even more options!
 

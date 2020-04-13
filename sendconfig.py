@@ -182,6 +182,9 @@ class ConfigWidget(QWidget):
                                     widget.addItem(entry)
                     widget.setCurrentText(value)
 
+                elif isinstance(widget, Modules):
+                    widget.setCurrentIndex(int(value))
+
                 else:
                     widget.setText(value)
 
@@ -274,6 +277,7 @@ class SendConfigDialog(QDialog):
                 else:
                     self.settings.remove(widget.section)
             if self.commands:
+                self.commands.append("restart 1")
                 self.done(QDialog.Accepted)
             else:
                 QMessageBox.warning(self, "Warning", "Nothing to send.\nTick one of the checkboxes on the list.")

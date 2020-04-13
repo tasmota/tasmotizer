@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import re
 import sys
 
 import serial
@@ -15,7 +15,7 @@ from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkRepl
 from PyQt5.QtSerialPort import QSerialPortInfo, QSerialPort
 from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QPushButton, QComboBox, QWidget, QCheckBox, QRadioButton, \
     QButtonGroup, QFileDialog, QProgressBar, QLabel, QMessageBox, QDialogButtonBox, QGroupBox, QFormLayout, QTabWidget, \
-    QStatusBar
+    QStatusBar, QPlainTextEdit
 
 import banner
 
@@ -46,6 +46,7 @@ class ESPWorker(QObject):
         self.bin_file = bin_file
         self.backup = backup
         self.erase = erase
+        self.verify = verify
 
         self.continue_flag = True
 
@@ -53,14 +54,12 @@ class ESPWorker(QObject):
     def execute(self):
         esptool.sw.setContinueFlag(True)
         command_base = ["--chip", "esp8266", "--port", self.port, "--baud", "115200"]
-        command_backup = ["read_flash", "0x00000", "0x100000", "backup_{}.bin".format(datetime.now().strftime("%Y%m%d_%H%M%S"))]
-        command_write = ["write_flash", "--flash_mode", "dout", "0x00000", self.bin_file]
-
-        if self.erase:
-            command_write.extend(["--erase-all"])
+        command_backup = ["--after", "no_reset", "read_flash", "0x00000", "0x100000", "backup_{}.bin".format(datetime.now().strftime("%Y%m%d_%H%M%S"))]
+        command_write = ["--after", "soft_reset", "write_flash", "--flash_mode", "dout", "--flash_size", "1MB", "0x00000", self.bin_file]
 
         if self.backup and self.continue_flag:
-            command = command_base + command_backup + ["--after no_reset"]
+            command = command_base + command_backup
+
             try:
                 self.backup_start.emit()
                 esptool.main(command)
@@ -68,9 +67,13 @@ class ESPWorker(QObject):
                 self.port_error.emit("{}".format(e))
 
         if self.continue_flag:
-            command = command_base + command_write + ["--after soft_reset"]
+            command = command_base + command_write
+            if self.erase:
+                command.append("--erase-all")
+
             if self.verify:
                 command += ["verify"]
+            print(command)
             try:
                 esptool.main(command)
                 self.finished.emit()
@@ -101,6 +104,8 @@ class FlashingDialog(QDialog):
         esptool.sw.write_progress.connect(self.write_progress)
         esptool.sw.write_finished.connect(self.write_finished)
 
+        esptool.sw.process_output.connect(self.process_output)
+
         self.setFixedWidth(400)
 
         self.nrBinFile = QNetworkRequest()
@@ -114,6 +119,10 @@ class FlashingDialog(QDialog):
 
         self.progress_task = QProgressBar()
         self.progress_task.setFixedHeight(45)
+
+        self.output = QPlainTextEdit()
+        self.output.setReadOnly(True)
+
         self.task = QLabel()
 
         self.erase_timer = QTimer()
@@ -122,7 +131,7 @@ class FlashingDialog(QDialog):
 
         self.btns = QDialogButtonBox(QDialogButtonBox.Abort)
 
-        vl.addWidgets([QLabel("Tasmotizing in progress..."), self.task, self.progress_task, self.btns])
+        vl.addWidgets([QLabel("Tasmotizing in progress..."), self.output, self.task, self.progress_task, self.btns])
 
         self.btns.rejected.connect(self.abort)
 
@@ -193,6 +202,9 @@ class FlashingDialog(QDialog):
         self.task.setText("Writing done.")
         self.accept()
 
+    def process_output(self, entry):
+        self.output.appendPlainText(entry)
+
     def run_esptool(self):
         self.espthread = QThread()
         self.espworker = ESPWorker(self.parent.cbxPort.currentData(), self.bin_file, self.parent.cbBackup.isChecked(),
@@ -243,6 +255,12 @@ class Tasmotizer(QDialog):
         self.createUI()
 
         self.refreshPorts()
+
+        self.previous_reply = b""
+        self.port = QSerialPort(self.cbxPort.currentData())
+        self.port.setBaudRate(115200)
+        self.port.readyRead.connect(self.showCurrentIP)
+
         self.getHackBoxFeeds()
 
     def createUI(self):
@@ -423,21 +441,21 @@ class Tasmotizer(QDialog):
         dlg = SendConfigDialog()
         if dlg.exec_() == QDialog.Accepted:
             try:
-                self.port = QSerialPort(self.cbxPort.currentData())
-                self.port.setBaudRate(115200)
                 self.port.open(QIODevice.ReadWrite)
-                commands = f'backlog {";".join(dlg.commands)}'
-                bytes_sent = self.port.write(bytes(commands, 'utf8'))
+                commands = f'backlog {"; ".join(dlg.commands)}'
+                bytes_sent = self.port.write(bytes(commands + "\n", 'utf8'))
+                self.port.flush()
+
                 QMessageBox.information(self, "Done",
                                         "Configuration sent ({} bytes)\nDevice will restart.".format(bytes_sent))
+
             except Exception as e:
                 QMessageBox.critical(self, "Port error", e)
 
-            finally:
-                if self.port.isOpen():
-                    self.port.close()
-
     def start_process(self):
+        if self.port.isOpen():
+            self.port.close()
+
         ok = True
 
         if self.mode == 0:
@@ -472,6 +490,20 @@ class Tasmotizer(QDialog):
         delta = e.globalPos() - self.old_pos
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.old_pos = e.globalPos()
+
+    def showCurrentIP(self):
+        try:
+            current_reply = self.port.readAll()
+            reply = str(self.previous_reply + current_reply, 'utf8').replace("\r\n", "")
+
+            rx_ip = re.search(r"IP address (?P<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", reply)
+            if rx_ip:
+                self.sb.showMessage(f"Device IP: {rx_ip.group('ip')}")
+                self.port.close()
+            else:
+                self.previous_reply = current_reply
+        except:
+            pass
 
 
 def main():
