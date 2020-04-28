@@ -1,25 +1,25 @@
 #!/usr/bin/env python
+"""Tasmotizer."""
+from datetime import datetime
+import json
 import re
 import sys
 
 import serial
 
 import tasmotizer_esptool as esptool
-import json
-
-from datetime import datetime
 
 from PyQt5.QtCore import QUrl, Qt, QThread, QObject, pyqtSignal, pyqtSlot, QSettings, QTimer, QSize, QIODevice
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 from PyQt5.QtSerialPort import QSerialPortInfo, QSerialPort
 from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QPushButton, QComboBox, QWidget, QCheckBox, QRadioButton, \
-    QButtonGroup, QFileDialog, QProgressBar, QLabel, QMessageBox, QDialogButtonBox, QGroupBox, QFormLayout, QTabWidget, \
+    QButtonGroup, QFileDialog, QProgressBar, QLabel, QMessageBox, QDialogButtonBox, \
     QStatusBar, QPlainTextEdit
 
-import banner
+import banner as _
 
-from gui import HLayout, VLayout, GroupBoxH, GroupBoxV, dark_palette
+from gui import HLayout, VLayout, GroupBoxV, dark_palette
 from sendconfig import SendConfigDialog
 
 
@@ -63,7 +63,7 @@ class ESPWorker(QObject):
             try:
                 self.backup_start.emit()
                 esptool.main(command)
-            except esptool.FatalError or serial.SerialException as e:
+            except (esptool.FatalError, serial.SerialException) as e:
                 self.port_error.emit("{}".format(e))
 
         if self.continue_flag:
@@ -77,7 +77,7 @@ class ESPWorker(QObject):
             try:
                 esptool.main(command)
                 self.finished.emit()
-            except esptool.FatalError or serial.SerialException as e:
+            except (esptool.FatalError, serial.SerialException) as e:
                 self.port_error.emit("{}".format(e))
 
 
@@ -233,6 +233,7 @@ class FlashingDialog(QDialog):
 
 
 class Tasmotizer(QDialog):
+    old_pos = None
 
     def __init__(self):
         super().__init__()
@@ -428,7 +429,7 @@ class Tasmotizer(QDialog):
                 for img in cores[core]:
                     img['filesize'] //= 1024
                     self.cbHackboxBin.addItem("{binary} [{version}@{}, {commit}, {filesize}kB]".format(core, **img),
-                                               "{otaurl};{}-dev-{version}-{commit}.bin".format(img['binary'].rstrip(".bin"), **img))
+                                              "{otaurl};{}-dev-{version}-{commit}.bin".format(img['binary'].rstrip(".bin"), **img))
             self.cbHackboxBin.setEnabled(True)
 
     def openBinFile(self):
@@ -487,6 +488,9 @@ class Tasmotizer(QDialog):
         self.old_pos = e.globalPos()
 
     def mouseMoveEvent(self, e):
+        if self.old_pos is None:
+            self.old_pos = e.globalPos()
+            return
         delta = e.globalPos() - self.old_pos
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.old_pos = e.globalPos()

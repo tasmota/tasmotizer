@@ -1,0 +1,6 @@
+# Config
+tasmotizer.cfg
+
+# Development environment
+.vscode
+Pipfile*
