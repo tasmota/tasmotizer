@@ -23,7 +23,7 @@ from gui import HLayout, VLayout, GroupBoxV, dark_palette
 from sendconfig import SendConfigDialog
 
 
-class StdOut(object):
+class StdOut:
     def __init__(self, processor):
         self.processor = processor
 

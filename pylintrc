@@ -15,7 +15,10 @@ disable=
   missing-class-docstring,
   missing-function-docstring,
   line-too-long,
-  invalid-name
+  invalid-name,
+  too-many-arguments,
+  too-many-instance-attributes,
+  too-many-statements
 enable=
   use-symbolic-message-instead
 
