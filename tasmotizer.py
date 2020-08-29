@@ -342,7 +342,7 @@ class FlashingDialog(QDialog):
             self.bin_file = parent.cbHackboxBin.currentData().split(";")[1]
             self.nrBinFile.setUrl(QUrl(parent.cbHackboxBin.currentData().split(";")[0]))
             self.bin_reply = parent.nam.get(self.nrBinFile)
-            self.task.setText("Downloading binary from thehackbox.org...")
+            self.task.setText("Downloading binary from http://sidweb.nl...")
             self.bin_reply.readyRead.connect(self.appendBinFile)
             self.bin_reply.downloadProgress.connect(self.updateBinProgress)
             self.bin_reply.finished.connect(self.saveBinFile)
@@ -438,8 +438,8 @@ class Tasmotizer(QDialog):
         self.settings = QSettings("tasmotizer.cfg", QSettings.IniFormat)
 
         self.nam = QNetworkAccessManager()
-        self.nrRelease = QNetworkRequest(QUrl("http://thehackbox.org/tasmota/release/release.php"))
-        self.nrDevelopment = QNetworkRequest(QUrl("http://thehackbox.org/tasmota/development.php"))
+        self.nrRelease = QNetworkRequest(QUrl("http://sidweb.nl/tasmota/release/release.php"))
+        self.nrDevelopment = QNetworkRequest(QUrl("http://sidweb.nl/tasmota/development.php"))
 
         self.setWindowTitle("Tasmotizer 1.1a")
         self.setMinimumWidth(480)
@@ -586,16 +586,13 @@ class Tasmotizer(QDialog):
 
     def processDevelopmentInfo(self):
         reply = json.loads(str(self.development_data, 'utf8'))
-        _, cores = list(reply.items())[0]
-
-        if len(cores) > 0:
+        version, bins = list(reply.items())[0]
+        self.rbDev.setText("Development {}".format(version.lstrip("development-")))
+        if len(bins) > 0:
             self.cbHackboxBin.clear()
-
-            for core in list(cores.keys()):
-                for img in cores[core]:
-                    img['filesize'] //= 1024
-                    self.cbHackboxBin.addItem("{binary} [{version}@{}, {commit}, {filesize}kB]".format(core, **img),
-                                               "{otaurl};{}-dev-{version}-{commit}.bin".format(img['binary'].rstrip(".bin"), **img))
+            for img in bins:
+                img['filesize'] //= 1024
+                self.cbHackboxBin.addItem("{binary} [{filesize}kB]".format(**img), "{otaurl};{binary}".format(**img))
             self.cbHackboxBin.setEnabled(True)
 
     def openBinFile(self):
