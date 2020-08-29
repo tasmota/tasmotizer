@@ -342,7 +342,7 @@ class FlashingDialog(QDialog):
             self.bin_file = parent.cbHackboxBin.currentData().split(";")[1]
             self.nrBinFile.setUrl(QUrl(parent.cbHackboxBin.currentData().split(";")[0]))
             self.bin_reply = parent.nam.get(self.nrBinFile)
-            self.task.setText("Downloading binary from http://sidweb.nl...")
+            self.task.setText("Downloading binary from ota.tasmota.com...")
             self.bin_reply.readyRead.connect(self.appendBinFile)
             self.bin_reply.downloadProgress.connect(self.updateBinProgress)
             self.bin_reply.finished.connect(self.saveBinFile)
@@ -438,10 +438,10 @@ class Tasmotizer(QDialog):
         self.settings = QSettings("tasmotizer.cfg", QSettings.IniFormat)
 
         self.nam = QNetworkAccessManager()
-        self.nrRelease = QNetworkRequest(QUrl("http://sidweb.nl/tasmota/release/release.php"))
-        self.nrDevelopment = QNetworkRequest(QUrl("http://sidweb.nl/tasmota/development.php"))
+        self.nrRelease = QNetworkRequest(QUrl("http://ota.tasmota.com/tasmota/release/release.php"))
+        self.nrDevelopment = QNetworkRequest(QUrl("http://ota.tasmota.com/tasmota/development.php"))
 
-        self.setWindowTitle("Tasmotizer 1.1b")
+        self.setWindowTitle("Tasmotizer 1.1c")
         self.setMinimumWidth(480)
 
         self.mode = 0  # BIN file
