@@ -441,7 +441,7 @@ class Tasmotizer(QDialog):
         self.nrRelease = QNetworkRequest(QUrl("http://sidweb.nl/tasmota/release/release.php"))
         self.nrDevelopment = QNetworkRequest(QUrl("http://sidweb.nl/tasmota/development.php"))
 
-        self.setWindowTitle("Tasmotizer 1.1a")
+        self.setWindowTitle("Tasmotizer 1.1b")
         self.setMinimumWidth(480)
 
         self.mode = 0  # BIN file
