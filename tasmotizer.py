@@ -20,6 +20,8 @@ import banner
 
 from gui import HLayout, VLayout, GroupBoxH, GroupBoxV, SpinBox, dark_palette
 
+BINS_URL = 'http://ota.tasmota.com'
+
 modules = {"1": "Sonoff Basic", "2": "Sonoff RF", "4": "Sonoff TH", "5": "Sonoff Dual", "39": "Sonoff Dual R2",
            "6": "Sonoff Pow", "43": "Sonoff Pow R2", "7": "Sonoff 4CH", "23": "Sonoff 4CH Pro", "41": "Sonoff S31",
            "8": "Sonoff S2X", "10": "Sonoff Touch", "28": "Sonoff T1 1CH", "29": "Sonoff T1 2CH", "30": "Sonoff T1 3CH",
@@ -77,7 +79,7 @@ class ESPWorker(QObject):
             try:
                 self.backup_start.emit()
                 esptool.main(command)
-            except esptool.FatalError or serial.SerialException as e:
+            except (esptool.FatalError, serial.SerialException) as e:
                 self.port_error.emit("{}".format(e))
 
         if self.continue_flag:
@@ -85,7 +87,7 @@ class ESPWorker(QObject):
             try:
                 esptool.main(command)
                 self.finished.emit()
-            except esptool.FatalError or serial.SerialException as e:
+            except (esptool.FatalError, serial.SerialException) as e:
                 self.port_error.emit("{}".format(e))
 
     @pyqtSlot()
@@ -342,7 +344,7 @@ class FlashingDialog(QDialog):
             self.bin_file = parent.cbHackboxBin.currentData().split(";")[1]
             self.nrBinFile.setUrl(QUrl(parent.cbHackboxBin.currentData().split(";")[0]))
             self.bin_reply = parent.nam.get(self.nrBinFile)
-            self.task.setText("Downloading binary from ota.tasmota.com...")
+            self.task.setText(f'Downloading binary from {BINS_URL}...')
             self.bin_reply.readyRead.connect(self.appendBinFile)
             self.bin_reply.downloadProgress.connect(self.updateBinProgress)
             self.bin_reply.finished.connect(self.saveBinFile)
@@ -438,10 +440,10 @@ class Tasmotizer(QDialog):
         self.settings = QSettings("tasmotizer.cfg", QSettings.IniFormat)
 
         self.nam = QNetworkAccessManager()
-        self.nrRelease = QNetworkRequest(QUrl("http://ota.tasmota.com/tasmota/release/release.php"))
-        self.nrDevelopment = QNetworkRequest(QUrl("http://ota.tasmota.com/tasmota/development.php"))
+        self.nrRelease = QNetworkRequest(QUrl(f'{BINS_URL}/tasmota/release/release.php'))
+        self.nrDevelopment = QNetworkRequest(QUrl(f'{BINS_URL}/tasmota/development.php'))
 
-        self.setWindowTitle("Tasmotizer 1.1c")
+        self.setWindowTitle("Tasmotizer 1.1d")
         self.setMinimumWidth(480)
 
         self.mode = 0  # BIN file
@@ -574,26 +576,24 @@ class Tasmotizer(QDialog):
         self.development_data += self.development_reply.readAll()
 
     def processReleaseInfo(self):
-        reply = json.loads(str(self.release_data, 'utf8'))
-        version, bins = list(reply.items())[0]
-        self.rbRelease.setText("Release {}".format(version.lstrip("release-")))
-        if len(bins) > 0:
-            self.cbHackboxBin.clear()
-            for img in bins:
-                img['filesize'] //= 1024
-                self.cbHackboxBin.addItem("{binary} [{filesize}kB]".format(**img), "{otaurl};{binary}".format(**img))
-            self.cbHackboxBin.setEnabled(True)
+        self.fill_bin_combo(self.release_data)
 
     def processDevelopmentInfo(self):
-        reply = json.loads(str(self.development_data, 'utf8'))
-        version, bins = list(reply.items())[0]
-        self.rbDev.setText("Development {}".format(version.lstrip("development-")))
-        if len(bins) > 0:
-            self.cbHackboxBin.clear()
-            for img in bins:
-                img['filesize'] //= 1024
-                self.cbHackboxBin.addItem("{binary} [{filesize}kB]".format(**img), "{otaurl};{binary}".format(**img))
-            self.cbHackboxBin.setEnabled(True)
+        self.fill_bin_combo(self.development_data)
+
+    def fill_bin_combo(self, data):
+        try:
+            reply = json.loads(str(data, 'utf8'))
+            version, bins = list(reply.items())[0]
+            self.rbDev.setText("Development {}".format(version.lstrip("development-")))
+            if len(bins) > 0:
+                self.cbHackboxBin.clear()
+                for img in bins:
+                    img['filesize'] //= 1024
+                    self.cbHackboxBin.addItem("{binary} [{filesize}kB]".format(**img), "{otaurl};{binary}".format(**img))
+                self.cbHackboxBin.setEnabled(True)
+        except json.JSONDecodeError as e:
+            QMessageBox.critical(self, 'Cannot load bin data', e, )
 
     def openBinFile(self):
         previous_file = self.settings.value("bin_file")
