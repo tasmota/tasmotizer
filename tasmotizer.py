@@ -54,12 +54,13 @@ class ESPWorker(QObject):
     port_error = pyqtSignal(str)
     backup_start = pyqtSignal()
 
-    def __init__(self, port, bin_file, backup, erase):
+    def __init__(self, port, bin_file, backup, backup_size, erase):
         super().__init__()
 
         self.port = port
         self.bin_file = bin_file
         self.backup = backup
+        self.backup_size = backup_size
         self.erase = erase
 
         self.continue_flag = True
@@ -68,8 +69,8 @@ class ESPWorker(QObject):
     def execute(self):
         esptool.sw.setContinueFlag(True)
         command_base = ["--chip", "esp8266", "--port", self.port, "--baud", "115200"]
-        command_backup = ["read_flash", "0x00000", "0x100000", "backup_{}.bin".format(datetime.now().strftime("%Y%m%d_%H%M%S"))]
-        command_write = ["write_flash", "--flash_size", "1MB", "--flash_mode", "dout", "0x00000", self.bin_file]
+        command_backup = ["read_flash", "0x00000", self.backup_size, "backup_{}.bin".format(datetime.now().strftime("%Y%m%d_%H%M%S"))]
+        command_write = ["write_flash", "--flash_mode", "dout", "0x00000", self.bin_file]
 
         if self.erase:
             command_write.append("--erase-all")
@@ -407,8 +408,11 @@ class FlashingDialog(QDialog):
         self.accept()
 
     def run_esptool(self):
+        backup_size = f'0x{2**self.parent.cbxBackupSize.currentIndex()}00000'
+
         self.espthread = QThread()
-        self.espworker = ESPWorker(self.parent.cbxPort.currentData(), self.bin_file, self.parent.cbBackup.isChecked(),
+        self.espworker = ESPWorker(self.parent.cbxPort.currentData(), self.bin_file,
+                                   self.parent.cbBackup.isChecked(), backup_size,
                                    self.parent.cbErase.isChecked())
 
         self.espworker.port_error.connect(self.error)
@@ -485,10 +489,10 @@ class Tasmotizer(QDialog):
         self.rbDev = QRadioButton("Development")
         self.rbDev.setEnabled(False)
 
-        rbgFW = QButtonGroup(gbFW)
-        rbgFW.addButton(rbFile, 0)
-        rbgFW.addButton(self.rbRelease, 1)
-        rbgFW.addButton(self.rbDev, 2)
+        self.rbgFW = QButtonGroup(gbFW)
+        self.rbgFW.addButton(rbFile, 0)
+        self.rbgFW.addButton(self.rbRelease, 1)
+        self.rbgFW.addButton(self.rbDev, 2)
 
         hl_rb.addWidgets([rbFile, self.rbRelease, self.rbDev])
         gbFW.addLayout(hl_rb)
@@ -509,11 +513,22 @@ class Tasmotizer(QDialog):
         self.cbBackup = QCheckBox("Backup original firmware")
         self.cbBackup.setToolTip("Firmware backup is ESPECIALLY recommended when you flash a Sonoff, Tuya, Shelly etc. for the first time.\nWithout a backup you won't be able to restore the original functionality.")
 
+        self.cbxBackupSize = QComboBox()
+        self.cbxBackupSize.addItems([f'{2 ** s}MB' for s in range(5)])
+        self.cbxBackupSize.setEnabled(False)
+
+        hl_backup_size = HLayout(0)
+        hl_backup_size.addWidgets([QLabel('Backup size:'), self.cbxBackupSize])
+        hl_backup_size.setStretch(0, 3)
+        hl_backup_size.setStretch(1, 1)
+
         self.cbErase = QCheckBox("Erase before flashing")
         self.cbErase.setToolTip("Erasing previous firmware ensures all flash regions are clean for Tasmota, which prevents many unexpected issues.\nIf unsure, leave enabled.")
         self.cbErase.setChecked(True)
 
-        gbFW.addWidgets([self.wFile, self.cbHackboxBin, self.cbBackup, self.cbErase])
+        gbFW.addWidgets([self.wFile, self.cbHackboxBin, self.cbBackup])
+        gbFW.addLayout(hl_backup_size)
+        gbFW.addWidget(self.cbErase)
 
         # Buttons
         self.pbTasmotize = QPushButton("Tasmotize!")
@@ -535,9 +550,11 @@ class Tasmotizer(QDialog):
         vl.addLayout(hl_btns)
 
         pbRefreshPorts.clicked.connect(self.refreshPorts)
-        rbgFW.buttonClicked[int].connect(self.setBinMode)
+        self.rbgFW.buttonClicked[int].connect(self.setBinMode)
         rbFile.setChecked(True)
         pbFile.clicked.connect(self.openBinFile)
+
+        self.cbBackup.toggled.connect(self.cbxBackupSize.setEnabled)
 
         self.pbTasmotize.clicked.connect(self.start_process)
         self.pbConfig.clicked.connect(self.send_config)
@@ -576,16 +593,18 @@ class Tasmotizer(QDialog):
         self.development_data += self.development_reply.readAll()
 
     def processReleaseInfo(self):
-        self.fill_bin_combo(self.release_data)
+        self.fill_bin_combo(self.release_data, self.rbRelease)
 
     def processDevelopmentInfo(self):
-        self.fill_bin_combo(self.development_data)
+        self.fill_bin_combo(self.development_data, self.rbDev)
 
-    def fill_bin_combo(self, data):
+    def fill_bin_combo(self, data, rb):
         try:
             reply = json.loads(str(data, 'utf8'))
             version, bins = list(reply.items())[0]
-            self.rbDev.setText("Development {}".format(version.lstrip("development-")))
+            version = version.replace('-', ' ').title()
+
+            rb.setText(version)
             if len(bins) > 0:
                 self.cbHackboxBin.clear()
                 for img in bins:
@@ -593,7 +612,9 @@ class Tasmotizer(QDialog):
                     self.cbHackboxBin.addItem("{binary} [{filesize}kB]".format(**img), "{otaurl};{binary}".format(**img))
                 self.cbHackboxBin.setEnabled(True)
         except json.JSONDecodeError as e:
-            QMessageBox.critical(self, 'Cannot load bin data', e, )
+            self.setBinMode(0)
+            self.rbgFW.button(0).setChecked(True)
+            QMessageBox.critical(self, 'Error', f'Cannot load bin data:\n{e.msg}')
 
     def openBinFile(self):
         previous_file = self.settings.value("bin_file")
@@ -611,7 +632,7 @@ class Tasmotizer(QDialog):
                     self.port.open(QIODevice.ReadWrite)
                     bytes_sent = self.port.write(bytes(dlg.commands, 'utf8'))
                 except Exception as e:
-                    QMessageBox.critical(self, "Port error", e)
+                    QMessageBox.critical(self, "Error", f'Port access error:\n{e}')
                 else:
                     self.settings.setValue("gbWifi", dlg.gbWifi.isChecked())
                     self.settings.setValue("AP", dlg.leAP.text())
@@ -685,6 +706,7 @@ def main():
     mw.show()
 
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     main()
