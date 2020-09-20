@@ -38,6 +38,7 @@ from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
 
 class SignalWrapper(QObject):
 
+    connection_state = pyqtSignal(str)
     progress = pyqtSignal(str, int)
 
     def __init__(self):
@@ -276,6 +277,7 @@ class ESPLoader(object):
         try:
             self._port.baudrate = baud
         except IOError:
+            FatalError
             raise FatalError("Failed to set baud rate %d. The driver may not support this rate." % baud)
 
     @staticmethod
@@ -489,15 +491,17 @@ class ESPLoader(object):
         print('Connecting...', end='')
         sys.stdout.flush()
         last_error = None
+        sw.connection_state[str].emit('Connecting...')
 
         try:
             for _ in range(7):
-                last_error = self._connect_attempt(mode=mode, esp32r0_delay=False)
-                if last_error is None:
-                    return
-                last_error = self._connect_attempt(mode=mode, esp32r0_delay=True)
-                if last_error is None:
-                    return
+                if sw.continueFlag():
+                    last_error = self._connect_attempt(mode=mode, esp32r0_delay=False)
+                    if last_error is None:
+                        return
+                    last_error = self._connect_attempt(mode=mode, esp32r0_delay=True)
+                    if last_error is None:
+                        return
         finally:
             print('')  # end 'Connecting...' line
         raise FatalError('Failed to connect to %s: %s' % (self.CHIP_NAME, last_error))
@@ -2518,9 +2522,9 @@ def elf2image(args):
 def read_mac(esp, args):
     mac = esp.read_mac()
 
-    def print_mac(label, mac):
-        print('%s: %s' % (label, ':'.join(map(lambda x: '%02x' % x, mac))))
-    print_mac("MAC", mac)
+    def format_mac(label, mac):
+        return '%s: %s' % (label, ':'.join(map(lambda x: '%02x' % x, mac)))
+    return format_mac("MAC", mac)
 
 
 def chip_id(esp, args):
@@ -2923,13 +2927,16 @@ def main(custom_commandline=None):
         if esp is None:
             raise FatalError("Could not connect to an Espressif device on any of the %d available serial ports." % len(ser_list))
 
-        print("Chip is %s" % (esp.get_chip_description()))
+        chip = esp.get_chip_description()
+        print("Chip is %s" % (chip))
 
         print("Features: %s" % ", ".join(esp.get_chip_features()))
 
         print("Crystal is %dMHz" % esp.get_crystal_freq())
 
-        read_mac(esp, args)
+        mac = read_mac(esp, args)
+
+        sw.connection_state.emit(f'Connected to {chip} [{mac}]')
 
         if not args.no_stub:
             esp = esp.run_stub()

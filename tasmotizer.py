@@ -15,7 +15,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 from PyQt5.QtSerialPort import QSerialPortInfo, QSerialPort
 from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QPushButton, QComboBox, QWidget, QCheckBox, QRadioButton, \
-    QButtonGroup, QFileDialog, QProgressBar, QLabel, QMessageBox, QDialogButtonBox, QGroupBox, QFormLayout
+    QButtonGroup, QFileDialog, QProgressBar, QLabel, QMessageBox, QDialogButtonBox, QGroupBox, QFormLayout, QStatusBar
 
 import banner
 
@@ -26,7 +26,7 @@ BINS_URL = 'http://ota.tasmota.com'
 
 
 class ESPWorker(QObject):
-    error = pyqtSignal(str)
+    error = pyqtSignal(Exception)
     waiting = pyqtSignal()
     done = pyqtSignal()
 
@@ -65,7 +65,7 @@ class ESPWorker(QObject):
                 esptool.main(self.command + command_write)
 
         except (esptool.FatalError, serial.SerialException) as e:
-            self.error.emit('{}'.format(e))
+            self.error.emit(e)
         self.done.emit()
 
     def wait_for_user(self):
@@ -288,13 +288,19 @@ class ProcessDialog(QDialog):
         self.setWindowTitle('Tasmotizing...')
         self.setFixedWidth(400)
 
+        self.exception = None
+
         esptool.sw.progress.connect(self.update_progress)
 
         self.nam = QNetworkAccessManager()
         self.nrBinFile = QNetworkRequest()
         self.bin_data = b''
 
-        self.setLayout(QFormLayout())
+        self.setLayout(VLayout())
+        self.actions_layout = QFormLayout()
+        self.actions_layout.setSpacing(5)
+
+        self.layout().addLayout(self.actions_layout)
 
         self._actions = []
         self._action_widgets = {}
@@ -326,11 +332,14 @@ class ProcessDialog(QDialog):
         for action in self._actions:
             pb = QProgressBar()
             self._action_widgets[action] = pb
-            self.layout().addRow(action.capitalize(), pb)
+            self.actions_layout.addRow(action.capitalize(), pb)
 
-        btnAbort = QPushButton('Abort')
-        btnAbort.clicked.connect(self.abort)
-        self.layout().addWidget(btnAbort)
+        self.btns = QDialogButtonBox(QDialogButtonBox.Abort)
+        self.btns.rejected.connect(self.abort)
+        self.layout().addWidget(self.btns)
+
+        self.sb = QStatusBar()
+        self.layout().addWidget(self.sb)
 
     def appendBinFile(self):
         self.bin_data += self.bin_reply.readAll()
@@ -354,6 +363,9 @@ class ProcessDialog(QDialog):
         self.bin_reply.downloadProgress.connect(self.updateBinProgress)
         self.bin_reply.finished.connect(self.saveBinFile)
 
+    def show_connection_state(self, state):
+        self.sb.showMessage(state, 0)
+
     def run_esp(self):
         params = {
             'file_path': self.file_path,
@@ -371,8 +383,10 @@ class ProcessDialog(QDialog):
             self._actions,
             **params
         )
+        esptool.sw.connection_state.connect(self.show_connection_state)
         self.esp.waiting.connect(self.wait_for_user)
         self.esp.done.connect(self.accept)
+        self.esp.error.connect(self.error)
         self.esp.moveToThread(self.esp_thread)
         self.esp_thread.started.connect(self.esp.run)
         self.esp_thread.start()
@@ -400,20 +414,23 @@ class ProcessDialog(QDialog):
             self.esp.continue_ok()
             self.abort()
 
-    def abort(self):
-        self.esp.abort()
-        self.esp_thread.quit()
+    def stop_thread(self):
         self.esp_thread.wait(2000)
-        self.reject()
+        self.esp_thread.exit()
 
-    def accept(self):
-        self.esp_thread.quit()
-        self.esp_thread.wait(2000)
-        self.done(QDialog.Accepted)
+    def abort(self):
+        self.sb.showMessage('Aborting...', 0)
+        QApplication.processEvents()
+        self.esp.abort()
+        self.stop_thread()
+        self.reject()
 
     def error(self, e):
-        self.error_msg = e
-        self.reject()
+        self.exception = e
+        self.abort()
+
+    def closeEvent(self, e):
+        self.stop_thread()
 
 
 class Tasmotizer(QDialog):
@@ -676,7 +693,10 @@ class Tasmotizer(QDialog):
 
                 QMessageBox.information(self, 'Done', message)
             elif result == QDialog.Rejected:
-                QMessageBox.critical(self, 'Process aborted', 'The process has been aborted by the user.')
+                if process_dlg.exception:
+                    QMessageBox.critical(self, 'Error', str(process_dlg.exception))
+                else:
+                    QMessageBox.critical(self, 'Process aborted', 'The process has been aborted by the user.')
             
         except NoBinFile:
             QMessageBox.critical(self, 'Image path missing', 'Select a binary to write, or select a different mode.')
