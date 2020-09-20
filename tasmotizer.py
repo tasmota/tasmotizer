@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import re
 import sys
 from time import sleep
 
@@ -296,7 +296,7 @@ class ProcessDialog(QDialog):
         self.nrBinFile = QNetworkRequest()
         self.bin_data = b''
 
-        self.setLayout(VLayout())
+        self.setLayout(VLayout(5, 5))
         self.actions_layout = QFormLayout()
         self.actions_layout.setSpacing(5)
 
@@ -331,6 +331,7 @@ class ProcessDialog(QDialog):
     def create_ui(self):
         for action in self._actions:
             pb = QProgressBar()
+            pb.setFixedHeight(35)
             self._action_widgets[action] = pb
             self.actions_layout.addRow(action.capitalize(), pb)
 
@@ -418,6 +419,10 @@ class ProcessDialog(QDialog):
         self.esp_thread.wait(2000)
         self.esp_thread.exit()
 
+    def accept(self):
+        self.stop_thread()
+        self.done(QDialog.Accepted)
+
     def abort(self):
         self.sb.showMessage('Aborting...', 0)
         QApplication.processEvents()
@@ -431,6 +436,49 @@ class ProcessDialog(QDialog):
 
     def closeEvent(self, e):
         self.stop_thread()
+
+
+class DeviceIP(QDialog):
+    def __init__(self, port: QSerialPort):
+        super(DeviceIP, self).__init__()
+
+        self.setWindowTitle('Device IP address')
+        self.setLayout(VLayout(10))
+
+        self.ip = QLineEdit()
+        self.ip.setAlignment(Qt.AlignCenter)
+        self.ip.setReadOnly(True)
+        self.ip.setText('xx.xx.xx.xx')
+        font = self.ip.font()
+        font.setPointSize(24)
+        self.ip.setFont(font)
+
+        btn = QDialogButtonBox(QDialogButtonBox.Close)
+        btn.rejected.connect(self.reject)
+
+        self.layout().addWidgets([self.ip, btn])
+
+        self.data = b''
+
+        self.port = port
+
+        self.re_ip = re.compile(r'(?:\()((?:[0-9]{1,3}\.){3}[0-9]{1,3})(?:\))')
+
+        try:
+            self.port.open(QIODevice.ReadWrite)
+            self.port.readyRead.connect(self.read)
+            self.port.write(bytes('IPAddress1\n', 'utf8'))
+        except Exception as e:
+            QMessageBox.critical(self, 'Error', f'Port access error:\n{e}')
+
+    def read(self):
+        try:
+            self.data += self.port.readAll()
+            match = self.re_ip.search(bytes(self.data).decode('utf8'))
+            if match:
+                self.ip.setText(match[1])
+        except:
+            pass
 
 
 class Tasmotizer(QDialog):
@@ -544,12 +592,16 @@ class Tasmotizer(QDialog):
         self.pbConfig.setStyleSheet('background-color: #571054;')
         self.pbConfig.setFixedHeight(50)
 
+        self.pbGetIP = QPushButton('Get IP')
+        self.pbGetIP.setFixedSize(QSize(75, 50))
+        self.pbGetIP.setStyleSheet('background-color: #2a8a26;')
+
         self.pbQuit = QPushButton('Quit')
         self.pbQuit.setStyleSheet('background-color: #c91017;')
         self.pbQuit.setFixedSize(QSize(50, 50))
 
         hl_btns = HLayout([50, 3, 50, 3])
-        hl_btns.addWidgets([self.pbTasmotize, self.pbConfig, self.pbQuit])
+        hl_btns.addWidgets([self.pbTasmotize, self.pbConfig, self.pbGetIP, self.pbQuit])
 
         vl.addWidgets([gbPort, gbBackup, gbFW])
         vl.addLayout(hl_btns)
@@ -563,6 +615,7 @@ class Tasmotizer(QDialog):
 
         self.pbTasmotize.clicked.connect(self.start_process)
         self.pbConfig.clicked.connect(self.send_config)
+        self.pbGetIP.clicked.connect(self.get_ip)
         self.pbQuit.clicked.connect(self.reject)
 
     def refreshPorts(self):
@@ -626,6 +679,15 @@ class Tasmotizer(QDialog):
         file, ok = QFileDialog.getOpenFileName(self, 'Select Tasmota image', previous_file, filter='BIN files (*.bin)')
         if ok:
             self.file.setText(file)
+
+    def get_ip(self):
+        self.port = QSerialPort(self.cbxPort.currentData())
+        self.port.setBaudRate(115200)
+
+        DeviceIP(self.port).exec_()
+
+        if self.port.isOpen():
+            self.port.close()
 
     def send_config(self):
         dlg = SendConfigDialog()
