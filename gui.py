@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QSizePolicy, QGroupBox, QSpinBox, QHBoxLayout, QDialog, QProgressBar, \
-    QPushButton, QButtonGroup, QDialogButtonBox, QLabel
+    QPushButton, QButtonGroup, QDialogButtonBox, QLabel, QFrame, QProgressDialog
 
 
 class VLayout(QVBoxLayout):

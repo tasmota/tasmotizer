@@ -38,19 +38,7 @@ from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
 
 class SignalWrapper(QObject):
 
-    connecting = pyqtSignal()
-    connected = pyqtSignal()
-
-    read_start = pyqtSignal()
-    read_progress = pyqtSignal(int)
-    read_finished = pyqtSignal()
-
-    erase_start = pyqtSignal()
-    erase_finished = pyqtSignal()
-
-    write_start = pyqtSignal()
-    write_progress = pyqtSignal(int)
-    write_finished = pyqtSignal()
+    progress = pyqtSignal(str, int)
 
     def __init__(self):
         super().__init__()
@@ -61,6 +49,7 @@ class SignalWrapper(QObject):
 
     def setContinueFlag(self, state):
         self._continue_flag = state
+
 
 sw = SignalWrapper()
 
@@ -2397,11 +2386,10 @@ def write_flash(esp, args):
         seq = 0
         written = 0
         t = time.time()
-        sw.write_start.emit()
         while sw.continueFlag() and len(image) > 0:
             # print('\rWriting at 0x%08x... (%d %%)' % (address + seq * esp.FLASH_WRITE_SIZE, 100 * (seq + 1) // blocks), end='')
             # sys.stdout.flush()
-            sw.write_progress.emit(100 * (seq + 1) // blocks)
+            sw.progress.emit('write', 100 * (seq + 1) // blocks)
             block = image[0:esp.FLASH_WRITE_SIZE]
             if args.compress:
                 esp.flash_defl_block(block, seq, timeout=DEFAULT_TIMEOUT * ratio * 2)
@@ -2415,7 +2403,6 @@ def write_flash(esp, args):
             image = image[esp.FLASH_WRITE_SIZE:]
             seq += 1
             written += len(block)
-        sw.write_finished.emit()
         if sw.continueFlag():
             t = time.time() - t
             speed_msg = ""
@@ -2547,12 +2534,12 @@ def chip_id(esp, args):
 
 def erase_flash(esp, args):
     if sw.continueFlag():
-        sw.erase_start.emit()
+        sw.progress.emit('erase', 50)
         print('Erasing flash (this may take a while)...')
         t = time.time()
         esp.erase_flash()
         print('Chip erase completed successfully in %.1fs' % (time.time() - t))
-        sw.erase_finished.emit()
+        sw.progress.emit('erase', 100)
 
 
 def erase_region(esp, args):
@@ -2575,12 +2562,11 @@ def flash_id(esp, args):
 
 
 def read_flash(esp, args):
-    sw.read_start.emit()
     if args.no_progress:
         flash_progress = None
     else:
         def flash_progress(progress, length):
-            sw.read_progress.emit(progress * 100.0 // length)
+            sw.progress.emit('backup', progress * 100.0 // length)
             # msg = '%d (%d %%)' % (progress, progress * 100.0 / length)
             # padding = '\b' * len(msg)
             # if progress == length:
@@ -2590,7 +2576,6 @@ def read_flash(esp, args):
     t = time.time()
     data = esp.read_flash(args.address, args.size, flash_progress)
     t = time.time() - t
-    sw.read_finished.emit()
     print('\rRead %d bytes at 0x%x in %.1f seconds (%.1f kbit/s)...'
           % (len(data), args.address, t, len(data) / t * 8 / 1000))
     with open(args.filename, 'wb') as f:
