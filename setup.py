@@ -1,5 +1,14 @@
 from setuptools import setup
 import os
+import re
+
+def find_version():
+    with open('tasmotizer.py', 'r') as version_file:
+        version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                                  version_file.read(), re.M)
+        if version_match:
+            return version_match.group(1)
+        raise RuntimeError("Unable to find version string.")
 
 if os.name == "nt":
     scripts = None
@@ -14,9 +23,9 @@ else:
 
 setup(
     name='tasmotizer',
-    version="1.2",
+    version=find_version(),
     url='https://github.com/tasmota/tasmotizer',
-    py_modules=['tasmotizer', 'gui', 'tasmotizer_esptool', 'banner'],
+    py_modules=['tasmotizer', 'gui', 'tasmotizer_esptool', 'banner', 'utils'],
     license='GPLv3',
     author='jziolkowski',
     author_email='jacek@ziolkowscy.com',

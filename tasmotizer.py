@@ -22,6 +22,8 @@ import banner
 from gui import HLayout, VLayout, GroupBoxH, GroupBoxV, SpinBox, dark_palette
 from utils import MODULES, NoBinFile, NetworkError
 
+__version__ = '1.2.1'
+
 BINS_URL = 'http://ota.tasmota.com'
 
 
@@ -495,7 +497,7 @@ class Tasmotizer(QDialog):
 
         self.esp_thread = None
 
-        self.setWindowTitle('Tasmotizer 1.2')
+        self.setWindowTitle(f'Tasmotizer {__version__}')
         self.setMinimumWidth(480)
 
         self.mode = 0  # BIN file
