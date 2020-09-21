@@ -1,3 +1,5 @@
+BINS_URL = 'http://ota.tasmota.com'
+
 MODULES = {
     "1": "Sonoff Basic",
     "2": "Sonoff RF",
