@@ -39,6 +39,9 @@ class Setting:
             if isinstance(self._widget, SpinBox):
                 self._widget.setValue(int(value))
 
+            elif isinstance(self._widget, QCheckBox):
+                self._widget.setChecked(True if value == '1' else False)
+
             elif isinstance(self._widget, TemplateComboBox):
                 user_templates_file = os.path.sep.join([os.path.dirname(self._settings.fileName()), 'templates.txt'])
                 if os.path.exists(user_templates_file):
@@ -153,16 +156,10 @@ class ConfigWidget(QWidget):
 
         for setting in self.content:
             setting.apply_settings(self.settings)
-            widget = setting.widget()
-            # setattr(self, setting.command, widget)
-            self.layout().addRow(setting.description, widget)
+            self.layout().addRow(setting.description, setting.widget())
 
     def collect_and_save(self):
-        commands = []
-        for setting in self.content:
-            commands.append(setting.serial_command())
-
-        return commands
+        return [setting.serial_command() for setting in self.content]
 
 
 class SendConfigDialog(QDialog):
@@ -180,6 +177,7 @@ class SendConfigDialog(QDialog):
         hl = HLayout(0)
         self.config_list = QListWidget()
         self.config_list.setMinimumWidth(150)
+        self.config_list.setAlternatingRowColors(True)
         self.config_stack = QStackedWidget()
         self.config_stack.setMaximumWidth(500)
 
