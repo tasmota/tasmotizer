@@ -27,9 +27,12 @@ The full-featured flashing tool for Tasmota. With the great [ESPtool](https://gi
  - Option 1: [get Windows  standalone executable](https://github.com/tasmota/tasmotizer/releases) (thanks @Jason2866)<br/>
  In the odd case of your antivirus going haywire over that application, it's a [false positive](https://github.com/pyinstaller/pyinstaller/issues/3802)._
  
- - Option 2: `pip3 install tasmotizer` and then simply run `tasmotizer.py` from the shell/command line
+ - Option 2: Install from PyPI using pip:<br/>
+ Upgrade pip and wheel packages: `pip3 install --upgrade pip wheel`<br/>
+ Install tasmotizer: `pip3 install tasmotizer`   
+ Then simply run `tasmotizer.py` from the shell/command line
  
- - Option 3: Clone the repo, `pip3 install PyQt5 pyserial` followed by `python3 tasmotizer.py ` and flash away!
+ - Option 3: Clone the repo, `pip3 install -r requirements.txt` followed by `python3 tasmotizer.py ` and flash away!
  
 ## Screenshots
 
