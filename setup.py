@@ -3,7 +3,7 @@ import os
 import re
 
 def find_version():
-    with open('tasmotizer.py', 'r') as version_file:
+    with open('gui/tasmotizer.py', 'r') as version_file:
         version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
                                   version_file.read(), re.M)
         if version_match:
@@ -25,7 +25,8 @@ setup(
     name='tasmotizer',
     version=find_version(),
     url='https://github.com/tasmota/tasmotizer',
-    py_modules=['tasmotizer', 'gui', 'tasmotizer_esptool', 'banner', 'utils'],
+    py_modules=['tasmotizer', 'utils'],
+    packages=['esptool', 'gui'],
     license='GPLv3',
     author='jziolkowski',
     author_email='jacek@ziolkowscy.com',

@@ -14,6 +14,8 @@ from gui.widgets import VLayout, GroupBoxH, GroupBoxV, HLayout
 from utils import BINS_URL, NoBinFile, NetworkError
 
 
+__version__ = '1.3a0'
+
 class Tasmotizer(QDialog):
 
     def __init__(self):
@@ -28,7 +30,7 @@ class Tasmotizer(QDialog):
 
         self.esp_thread = None
 
-        self.setWindowTitle('Tasmotizer 1.2')
+        self.setWindowTitle(f'Tasmotizer {__version__}')
         self.setMinimumWidth(480)
 
         self.mode = 0  # BIN file
