@@ -30,11 +30,11 @@ The full-featured flashing tool for Tasmota. With the great [ESPtool](https://gi
 ## Screenshots
 
 <p align="center">
-    <img src=https://user-images.githubusercontent.com/11555742/69892658-23d43f80-1308-11ea-8caf-fcd719626f74.png>    
+    <img src=https://user-images.githubusercontent.com/24528715/93748447-96e0d680-fbf8-11ea-9647-9d303cda0ea7.png>    
 </p>
 
 <p align="center">
-    <img src=https://user-images.githubusercontent.com/11555742/69891343-2fba0480-12fc-11ea-9cea-110eb8f65ca2.png>
+    <img src=https://user-images.githubusercontent.com/24528715/93748408-82044300-fbf8-11ea-89c5-891065e52430.png>
 </p>
 
 (c) 2019 Jacek Ziółkowski https://github.com/jziolkowski
