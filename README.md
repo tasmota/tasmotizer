@@ -18,7 +18,7 @@ The full-featured flashing tool for Tasmota. With the great [ESPtool](https://gi
  
  - Send configuration to flashed device via serial: one-click configure of Wifi (including recovery AP), MQTT, Module and/or Template  
  
- - Single-click get the IP of your device
+ - Single-click get the IP of your device (DISCLAIMER: this functionality depends on the current state of your device, so it might require a few tries to get the proper result)
  
  - Dark theme: proven to increase flashing speed and reliability 
  
