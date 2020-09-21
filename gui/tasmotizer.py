@@ -1,6 +1,6 @@
 import json
 
-from PyQt5.QtCore import QSettings, QUrl, QSize, QIODevice
+from PyQt5.QtCore import QSettings, QUrl, QIODevice
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt5.QtSerialPort import QSerialPortInfo, QSerialPort
@@ -15,8 +15,8 @@ from utils import BINS_URL, NoBinFile, NetworkError, Aborted
 
 __version__ = '1.3a0'
 
-class Tasmotizer(QDialog):
 
+class Tasmotizer(QDialog):
     def __init__(self):
         super().__init__()
         self.settings = QSettings(QSettings.IniFormat, QSettings.UserScope, 'tasmota', 'tasmotizer')
@@ -116,7 +116,7 @@ class Tasmotizer(QDialog):
 
         # action buttons
         btns = {
-            'Tasmotize!': ['#223579', self.start_process],
+            'Tasmotize!': ['#223579', self.tasmotize],
             'Send config': ['#571054', self.send_config],
             'Backup': ['#5447aa', self.backup],
             'Get IP': ['#1d2c68', self.get_ip],
@@ -140,7 +140,6 @@ class Tasmotizer(QDialog):
         self.rbgFW.buttonClicked[int].connect(self.setBinMode)
         rbFile.setChecked(True)
         pbFile.clicked.connect(self.openBinFile)
-
 
     def refreshPorts(self):
         self.cbxPort.clear()
@@ -204,9 +203,14 @@ class Tasmotizer(QDialog):
         if ok:
             self.file.setText(file)
 
+    def get_backup_size(self):
+        return QInputDialog.getItem(self, 'Image backup', 'Select flash size', [f'{2 ** s}MB' for s in range(5)],
+                             editable=False)
+
     def backup(self):
-        dlg, ok = QInputDialog.getItem(self, 'Image backup', 'Select flash size', [f'{2 ** s}MB' for s in range(5)], editable=False)
-        size = int(dlg.replace('MB', ''))
+        backup_size, ok = self.get_backup_size()
+        if ok:
+            self.start_process(title='Saving firmware', backup=True, backup_size=backup_size)
 
     def get_ip(self):
         self.port = QSerialPort(self.cbxPort.currentData())
@@ -240,11 +244,26 @@ class Tasmotizer(QDialog):
     def message_aborted(self):
         QMessageBox.critical(self, 'Process aborted', 'The process has been aborted by the user.')
 
-    def start_process(self):
+    def start_process(self, **kwargs):
+        process_dlg = ProcessDialog(self.cbxPort.currentData(), **kwargs)
+        result = process_dlg.exec_()
+        if result == QDialog.Accepted:
+            message = 'Process successful!'
+            if not self.cbSelfReset.isChecked():
+                message += ' Power cycle the device.'
+
+            QMessageBox.information(self, 'Done', message)
+        elif result == QDialog.Rejected:
+            if process_dlg.exception:
+                QMessageBox.critical(self, 'Error', str(process_dlg.exception))
+            else:
+                self.message_aborted()
+
+    def tasmotize(self):
         try:
             backup_size = None
             if self.cbBackup.isChecked():
-                backup_size, ok = QInputDialog.getItem(self, 'Backup', 'Select flash size', [f'{2 ** s}MB' for s in range(5)], editable=False)
+                backup_size, ok = self.get_backup_size()
                 if not ok:
                     raise Aborted
 
@@ -258,26 +277,14 @@ class Tasmotizer(QDialog):
             elif self.mode in (1, 2):
                 self.file_path = self.cbHackboxBin.currentData()
 
-            process_dlg = ProcessDialog(
-                self.cbxPort.currentData(),
-                file_path=self.file_path,
-                backup=self.cbBackup.isChecked(),
-                backup_size=backup_size,
-                erase=self.cbErase.isChecked(),
-                auto_reset=self.cbSelfReset.isChecked()
-            )
-            result = process_dlg.exec_()
-            if result == QDialog.Accepted:
-                message = 'Process successful!'
-                if not self.cbSelfReset.isChecked():
-                    message += ' Power cycle the device.'
-
-                QMessageBox.information(self, 'Done', message)
-            elif result == QDialog.Rejected:
-                if process_dlg.exception:
-                    QMessageBox.critical(self, 'Error', str(process_dlg.exception))
-                else:
-                    self.message_aborted()
+            kwargs = {
+                'file_path': self.file_path,
+                'backup': self.cbBackup.isChecked(),
+                'backup_size': backup_size,
+                'erase': self.cbErase.isChecked(),
+                'auto_reset': self.cbSelfReset.isChecked()
+            }
+            self.start_process(**kwargs)
 
         except Aborted:
             self.message_aborted()

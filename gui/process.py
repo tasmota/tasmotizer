@@ -11,7 +11,7 @@ class ProcessDialog(QDialog):
     def __init__(self, port, **kwargs):
         super().__init__()
 
-        self.setWindowTitle('Tasmotizing...')
+        self.setWindowTitle(kwargs.get('title', 'Tasmotizing...'))
         self.setFixedWidth(400)
 
         self.exception = None

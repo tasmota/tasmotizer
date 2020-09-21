@@ -30,8 +30,9 @@ class ESPWorker(QObject):
 
         try:
             if 'backup' in self._actions:
-                command_backup = ['read_flash', '0x00000', self._params['backup_size'],
-                                  'backup_{}.bin'.format(datetime.now().strftime('%Y%m%d_%H%M%S'))]
+                backup_size = f'0x{self._params["backup_size"].replace("MB", "")}00000'
+                filename = f'backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}_{self._params["backup_size"]}.bin'
+                command_backup = ['read_flash', '0x00000', backup_size, filename]
                 esptool.main(self.command + command_backup)
 
                 auto_reset = self._params['auto_reset']
