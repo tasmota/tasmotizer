@@ -11,21 +11,25 @@ The full-featured flashing tool for Tasmota. With the great [ESPtool](https://gi
 
 ## Features
 
- - Automatic backup of current ESP image before flashing: in case you want to return to manufacturer firmware
+ - Automatic backup of current ESP image before flashing: in case you want to return to manufacturer firmware<br/>
+ Now supporting backup sizes up to 16MB
  
  - Flash local .bin images, or simply select from release or development images: it will download them automatically 
  
  - Send configuration to flashed device via serial: one-click configure of Wifi (including recovery AP), MQTT, Module and/or Template  
  
+ - Single-click get the IP of your device
+ 
  - Dark theme: proven to increase flashing speed and reliability 
  
 ## Installation and how to run
 
- - For Windows: [get Windows  standalone executable](https://github.com/tasmota/tasmotizer/releases) (thanks @Jason2866)<br/>
- _In the odd case of your antivirus going haywire over that application, it's a [false positive](https://github.com/pyinstaller/pyinstaller/issues/3802)._
+ - Option 1: [get Windows  standalone executable](https://github.com/tasmota/tasmotizer/releases) (thanks @Jason2866)<br/>
+ In the odd case of your antivirus going haywire over that application, it's a [false positive](https://github.com/pyinstaller/pyinstaller/issues/3802)._
  
- - For all: Clone the repo, `pip3 install PyQt5 pyserial` followed by `python3 tasmotizer.py ` and flash away!
-   
+ - Option 2: `pip3 install tasmotizer` and then simply run `tasmotizer.py` from the shell/command line
+ 
+ - Option 3: Clone the repo, `pip3 install PyQt5 pyserial` followed by `python3 tasmotizer.py ` and flash away!
  
 ## Screenshots
 
