@@ -5,14 +5,13 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt5.QtSerialPort import QSerialPortInfo, QSerialPort
 from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QRadioButton, QButtonGroup, QWidget, QLineEdit, \
-    QCheckBox, QMessageBox, QFileDialog
+    QCheckBox, QMessageBox, QFileDialog, QInputDialog
 
 from gui.device_ip import DeviceIP
 from gui.process import ProcessDialog
 from gui.send_config import SendConfigDialog
-from gui.widgets import VLayout, GroupBoxH, GroupBoxV, HLayout
-from utils import BINS_URL, NoBinFile, NetworkError
-
+from gui.widgets import VLayout, GroupBoxH, GroupBoxV, HLayout, ActionButton
+from utils import BINS_URL, NoBinFile, NetworkError, Aborted
 
 __version__ = '1.3a0'
 
@@ -54,7 +53,7 @@ class Tasmotizer(QDialog):
         vl.addWidget(banner)
 
         # Port groupbox
-        gbPort = GroupBoxH('Select port', 3)
+        gbPort = GroupBoxH('Port', 3, 5)
         self.cbxPort = QComboBox()
         pbRefreshPorts = QPushButton('Refresh')
         gbPort.addWidget(self.cbxPort)
@@ -62,8 +61,26 @@ class Tasmotizer(QDialog):
         gbPort.layout().setStretch(0, 4)
         gbPort.layout().setStretch(1, 1)
 
+        # Device type groupbox
+        gbDeviceType = GroupBoxV('Device type', 3)
+        self.cbSelfReset = QCheckBox('Self-resetting device (NodeMCU, Wemos)')
+        self.cbSelfReset.setToolTip('Check if your device has self-resetting capabilities supported by esptool')
+        gbDeviceType.addWidget(self.cbSelfReset)
+
+        # Pre-flash actions groupbox
+        gbPreFlash = GroupBoxV('Before flashing')
+        self.cbBackup = QCheckBox('Backup original firmware')
+        self.cbBackup.setToolTip(
+            'Firmware backup is ESPECIALLY recommended when you flash a Sonoff, Tuya, Shelly etc. for the first time.\nWithout a backup you will not be able to restore the original functionality.')
+
+        self.cbErase = QCheckBox('Erase device memory')
+        self.cbErase.setToolTip(
+            'Erasing previous firmware ensures all flash regions are clean for Tasmota, which prevents many unexpected issues.\nIf unsure, leave enabled.')
+        self.cbErase.setChecked(True)
+        gbPreFlash.layout().addWidgets([self.cbBackup, self.cbErase])
+
         # Firmware groupbox
-        gbFW = GroupBoxV('Select image', 3)
+        gbFW = GroupBoxV('Image', 3, 5)
 
         hl_rb = HLayout(0)
         rbFile = QRadioButton('BIN file')
@@ -93,52 +110,30 @@ class Tasmotizer(QDialog):
         self.cbHackboxBin.setVisible(False)
         self.cbHackboxBin.setEnabled(False)
 
-        self.cbSelfReset = QCheckBox('Self-resetting device (NodeMCU, Wemos)')
-        self.cbSelfReset.setToolTip('Check if your device has self-resetting capabilities supported by esptool')
+        gbFW.addWidgets([self.wFile, self.cbHackboxBin])
 
-        gbBackup = GroupBoxV('Backup')
-        self.cbBackup = QCheckBox('Save original firmware')
-        self.cbBackup.setToolTip('Firmware backup is ESPECIALLY recommended when you flash a Sonoff, Tuya, Shelly etc. for the first time.\nWithout a backup you will not be able to restore the original functionality.')
+        vl.addWidgets([gbPort, gbDeviceType, gbPreFlash, gbFW])
 
-        self.cbxBackupSize = QComboBox()
-        self.cbxBackupSize.addItems([f'{2 ** s}MB' for s in range(5)])
-        self.cbxBackupSize.setEnabled(False)
+        # action buttons
+        btns = {
+            'Tasmotize!': ['#223579', self.start_process],
+            'Send config': ['#571054', self.send_config],
+            'Backup': ['#5447aa', self.backup],
+            'Get IP': ['#1d2c68', self.get_ip],
+            'Quit': ['#c91017', self.reject],
+        }
 
-        hl_backup_size = HLayout(0)
-        hl_backup_size.addWidgets([QLabel('Flash size:'), self.cbxBackupSize])
-        hl_backup_size.setStretch(0, 3)
-        hl_backup_size.setStretch(1, 1)
+        hl_btns = HLayout([50, 3, 50, 3], 5)
 
-        gbBackup.addWidget(self.cbBackup)
-        gbBackup.addLayout(hl_backup_size)
+        for btn, prop in btns.items():
+            color, func = prop
+            pb = ActionButton(btn, color)
+            pb.clicked.connect(func)
+            hl_btns.addWidget(pb)
 
-        self.cbErase = QCheckBox('Erase before flashing')
-        self.cbErase.setToolTip('Erasing previous firmware ensures all flash regions are clean for Tasmota, which prevents many unexpected issues.\nIf unsure, leave enabled.')
-        self.cbErase.setChecked(True)
+        for i, w in enumerate([4, 3, 2, 2, 2]):
+            hl_btns.setStretch(i, w)
 
-        gbFW.addWidgets([self.wFile, self.cbHackboxBin, self.cbSelfReset, self.cbErase])
-
-        # Buttons
-        self.pbTasmotize = QPushButton('Tasmotize!')
-        self.pbTasmotize.setFixedHeight(50)
-        self.pbTasmotize.setStyleSheet('background-color: #223579;')
-
-        self.pbConfig = QPushButton('Send config')
-        self.pbConfig.setStyleSheet('background-color: #571054;')
-        self.pbConfig.setFixedHeight(50)
-
-        self.pbGetIP = QPushButton('Get IP')
-        self.pbGetIP.setFixedSize(QSize(75, 50))
-        self.pbGetIP.setStyleSheet('background-color: #2a8a26;')
-
-        self.pbQuit = QPushButton('Quit')
-        self.pbQuit.setStyleSheet('background-color: #c91017;')
-        self.pbQuit.setFixedSize(QSize(50, 50))
-
-        hl_btns = HLayout([50, 3, 50, 3])
-        hl_btns.addWidgets([self.pbTasmotize, self.pbConfig, self.pbGetIP, self.pbQuit])
-
-        vl.addWidgets([gbPort, gbBackup, gbFW])
         vl.addLayout(hl_btns)
 
         pbRefreshPorts.clicked.connect(self.refreshPorts)
@@ -146,12 +141,6 @@ class Tasmotizer(QDialog):
         rbFile.setChecked(True)
         pbFile.clicked.connect(self.openBinFile)
 
-        self.cbBackup.toggled.connect(self.cbxBackupSize.setEnabled)
-
-        self.pbTasmotize.clicked.connect(self.start_process)
-        self.pbConfig.clicked.connect(self.send_config)
-        self.pbGetIP.clicked.connect(self.get_ip)
-        self.pbQuit.clicked.connect(self.reject)
 
     def refreshPorts(self):
         self.cbxPort.clear()
@@ -215,6 +204,10 @@ class Tasmotizer(QDialog):
         if ok:
             self.file.setText(file)
 
+    def backup(self):
+        dlg, ok = QInputDialog.getItem(self, 'Image backup', 'Select flash size', [f'{2 ** s}MB' for s in range(5)], editable=False)
+        size = int(dlg.replace('MB', ''))
+
     def get_ip(self):
         self.port = QSerialPort(self.cbxPort.currentData())
         self.port.setBaudRate(115200)
@@ -244,8 +237,17 @@ class Tasmotizer(QDialog):
             else:
                 QMessageBox.information(self, 'Done', 'Nothing to send')
 
+    def message_aborted(self):
+        QMessageBox.critical(self, 'Process aborted', 'The process has been aborted by the user.')
+
     def start_process(self):
         try:
+            backup_size = None
+            if self.cbBackup.isChecked():
+                backup_size, ok = QInputDialog.getItem(self, 'Backup', 'Select flash size', [f'{2 ** s}MB' for s in range(5)], editable=False)
+                if not ok:
+                    raise Aborted
+
             if self.mode == 0:
                 if len(self.file.text()) > 0:
                     self.file_path = self.file.text()
@@ -260,7 +262,7 @@ class Tasmotizer(QDialog):
                 self.cbxPort.currentData(),
                 file_path=self.file_path,
                 backup=self.cbBackup.isChecked(),
-                backup_size=self.cbxBackupSize.currentIndex(),
+                backup_size=backup_size,
                 erase=self.cbErase.isChecked(),
                 auto_reset=self.cbSelfReset.isChecked()
             )
@@ -275,8 +277,10 @@ class Tasmotizer(QDialog):
                 if process_dlg.exception:
                     QMessageBox.critical(self, 'Error', str(process_dlg.exception))
                 else:
-                    QMessageBox.critical(self, 'Process aborted', 'The process has been aborted by the user.')
+                    self.message_aborted()
 
+        except Aborted:
+            self.message_aborted()
         except NoBinFile:
             QMessageBox.critical(self, 'Image path missing', 'Select a binary to write, or select a different mode.')
         except NetworkError as e:

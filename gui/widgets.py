@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QSizePolicy, QGroupBox, QSpinBox, QHBoxLayout, QLineEdit, QComboBox
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QSizePolicy, QGroupBox, QSpinBox, QHBoxLayout, QLineEdit, QComboBox, \
+    QPushButton
 
 from utils import MODULES
 
@@ -110,3 +111,11 @@ class TemplateComboBox(QComboBox):
     def __init__(self):
         super(TemplateComboBox, self).__init__()
         self.setEditable(True)
+
+
+class ActionButton(QPushButton):
+    def __init__(self, label, color):
+        super(ActionButton, self).__init__(label)
+        self.setMinimumHeight(50)
+        self.setStyleSheet(f'background-color: {color};')
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed))

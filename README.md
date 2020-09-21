@@ -44,4 +44,4 @@ The full-featured flashing tool for Tasmota. With the great [ESPtool](https://gi
     <img src=https://user-images.githubusercontent.com/24528715/93748408-82044300-fbf8-11ea-89c5-891065e52430.png>
 </p>
 
-(c) 2019 Jacek Ziółkowski https://github.com/jziolkowski
+(c) 2020 Jacek Ziółkowski https://github.com/jziolkowski and contributors

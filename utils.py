@@ -73,9 +73,13 @@ MODULES = {
     "18": "Generic"
 }
 
+class Aborted(Exception):
+    pass
+
 
 class MissingDetail(Exception):
     pass
+
 
 class NoBinFile(Exception):
     pass

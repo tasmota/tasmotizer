@@ -101,8 +101,7 @@ class ProcessDialog(QDialog):
         }
 
         if self.backup:
-            backup_size = f'0x{2 ** self.backup_size}00000'
-            params['backup_size'] = backup_size
+            params['backup_size'] = self.backup_size
 
         self.esp_thread = QThread()
         self.esp = ESPWorker(
