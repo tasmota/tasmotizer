@@ -14,7 +14,7 @@ else:
 
 setup(
     name='tasmotizer',
-    version="1.1d",
+    version="1.2",
     url='https://github.com/tasmota/tasmotizer',
     py_modules=['tasmotizer', 'gui', 'tasmotizer-esptool', 'banner'],
     license='GPLv3',

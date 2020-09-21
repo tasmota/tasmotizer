@@ -495,7 +495,7 @@ class Tasmotizer(QDialog):
 
         self.esp_thread = None
 
-        self.setWindowTitle('Tasmotizer 1.1d')
+        self.setWindowTitle('Tasmotizer 1.2')
         self.setMinimumWidth(480)
 
         self.mode = 0  # BIN file
