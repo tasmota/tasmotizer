@@ -16,7 +16,7 @@ The full-featured flashing tool for Tasmota. With the great [ESPtool](https://gi
  
  - Flash local .bin images, or simply select from release or development images: it will download them automatically 
  
- - Send configuration to flashed device via serial: one-click configure of Wifi (including recovery AP), MQTT, Module and/or Template  
+ - Send configuration to flashed device via serial: one-click configuration of Wifi (including recovery AP), MQTT, Module, Template, SetOptions etc  
  
  - Single-click get the IP of your device (DISCLAIMER: this functionality depends on the current state of your device, so it might require a few tries to get the proper result)
  
