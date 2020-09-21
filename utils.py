@@ -74,6 +74,9 @@ MODULES = {
 }
 
 
+class MissingDetail(Exception):
+    pass
+
 class NoBinFile(Exception):
     pass
 

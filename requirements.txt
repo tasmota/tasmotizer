@@ -1,2 +1,3 @@
 pyserial
 PyQt5>=5.10
+keyring

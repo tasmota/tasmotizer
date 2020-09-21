@@ -20,7 +20,7 @@ class Tasmotizer(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.settings = QSettings('tasmotizer.cfg', QSettings.IniFormat)
+        self.settings = QSettings(QSettings.IniFormat, QSettings.UserScope, 'tasmota', 'tasmotizer')
 
         self.port = ''
 
@@ -232,30 +232,12 @@ class Tasmotizer(QDialog):
                     self.port = QSerialPort(self.cbxPort.currentData())
                     self.port.setBaudRate(115200)
                     self.port.open(QIODevice.ReadWrite)
-                    bytes_sent = self.port.write(bytes(dlg.commands, 'utf8'))
+                    commands = f'backlog {";".join(dlg.commands)}\n'
+                    bytes_sent = self.port.write(bytes(commands, 'utf8'))
+                    QMessageBox.information(self, 'Done',
+                                            'Configuration sent ({} bytes)\nDevice will restart.'.format(bytes_sent))
                 except Exception as e:
                     QMessageBox.critical(self, 'Error', f'Port access error:\n{e}')
-                else:
-                    self.settings.setValue('gbWifi', dlg.gbWifi.isChecked())
-                    self.settings.setValue('AP', dlg.leAP.text())
-
-                    self.settings.setValue('gbRecWifi', dlg.gbRecWifi.isChecked())
-
-                    self.settings.setValue('gbMQTT', dlg.gbMQTT.isChecked())
-                    self.settings.setValue('Broker', dlg.leBroker.text())
-                    self.settings.setValue('Port', dlg.sbPort.value())
-                    self.settings.setValue('Topic', dlg.leTopic.text())
-                    self.settings.setValue('FullTopic', dlg.leFullTopic.text())
-                    self.settings.setValue('FriendlyName', dlg.leFriendlyName.text())
-                    self.settings.setValue('MQTTUser', dlg.leMQTTUser.text())
-
-                    self.settings.setValue('gbModule', dlg.gbModule.isChecked())
-                    self.settings.setValue('ModuleMode', dlg.rbgModule.checkedId())
-                    self.settings.setValue('Module', dlg.cbModule.currentText())
-                    self.settings.setValue('Template', dlg.leTemplate.text())
-                    self.settings.sync()
-
-                    QMessageBox.information(self, 'Done', 'Configuration sent ({} bytes)\nDevice will restart.'.format(bytes_sent))
                 finally:
                     if self.port.isOpen():
                         self.port.close()

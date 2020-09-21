@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QSizePolicy, QGroupBox, QSpinBox, QHBoxLayout
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QSizePolicy, QGroupBox, QSpinBox, QHBoxLayout, QLineEdit, QComboBox
+
+from utils import MODULES
 
 
 class VLayout(QVBoxLayout):
@@ -89,3 +91,22 @@ class SpinBox(QSpinBox):
         self.setButtonSymbols(self.NoButtons)
         self.setMinimum(kwargs.get('minimum', 1))
         self.setMaximum(kwargs.get('maximum', 65535))
+
+
+class Password(QLineEdit):
+    def __init__(self):
+        super(Password, self).__init__()
+        self.setEchoMode(QLineEdit.Password)
+
+
+class Modules(QComboBox):
+    def __init__(self):
+        super(Modules, self).__init__()
+        for id, name in MODULES.items():
+            self.addItem(name, id)
+
+
+class TemplateComboBox(QComboBox):
+    def __init__(self):
+        super(TemplateComboBox, self).__init__()
+        self.setEditable(True)
