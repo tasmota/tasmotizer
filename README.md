@@ -24,8 +24,10 @@ The full-featured flashing tool for Tasmota. With the great [ESPtool](https://gi
  
 ## Installation and how to run
 
- - Option 1: [get Windows  standalone executable](https://github.com/tasmota/tasmotizer/releases) (thanks @Jason2866)<br/>
- In the odd case of your antivirus going haywire over that application, it's a [false positive](https://github.com/pyinstaller/pyinstaller/issues/3802)._
+ - Option 1: [get Windows  standalone executable](https://github.com/tasmota/tasmotizer/releases) (thanks @Jason2866):<br/>
+ `tasmotizer.exe` (64bit)<br/>
+ `tasmotizer-x86.exe` (32bit)<br/>
+ In the odd case of your antivirus going haywire over that application, it's a [false positive](https://github.com/pyinstaller/pyinstaller/issues/3802).
  
  - Option 2: Install from PyPI using pip:<br/>
  Upgrade pip and wheel packages: `pip3 install --upgrade pip wheel`<br/>
