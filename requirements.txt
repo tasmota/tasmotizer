@@ -1,2 +1,2 @@
-pyserial
+pyserial>=3.5
 PyQt5>=5.10
