@@ -1,0 +1,5 @@
+..\setup.py
+..\gui\device_ip.py
+..\gui\process.py
+..\gui\send_config.py
+..\gui\tasmotizer.py

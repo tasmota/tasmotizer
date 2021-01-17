@@ -1,0 +1,87 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-01-17 10:23+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Unable to find version string."
+msgstr ""
+
+msgid "The time has come to... Tasmotize!"
+msgstr ""
+
+msgid "Tasmotizer is a dedicated flashing tool for <a href=https://github.com/arendst/Tasmota>Tasmota</>, featuring automatic firmware backup, downlading release and development bins, and device configuration."
+msgstr ""
+
+msgid "Programming Language :: Python :: 3"
+msgstr ""
+
+msgid "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
+msgstr ""
+
+msgid "Operating System :: OS Independent"
+msgstr ""
+
+msgid "Issue Tracker"
+msgstr ""
+
+msgid "Documentation"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Tasmotizing..."
+msgstr ""
+
+msgid "User action required"
+msgstr ""
+
+msgid "Please power cycle the device, wait a moment and press OK"
+msgstr ""
+
+msgid "Aborting..."
+msgstr ""
+
+msgid "Tasmotizer is unable to use your system keyring"
+msgstr ""
+
+msgid "Enable HomeAssistant auto-discovery (SetOption19)"
+msgstr ""
+
+msgid "Display optional time offset from UTC in JSON payloads (SetOption52)"
+msgstr ""
+
+msgid "Tasmota won't erase the settings after 4 quick power cycles (SetOption65)"
+msgstr ""
+
+msgid "Send configuration to device"
+msgstr ""
+
+msgid "Warning"
+msgstr ""
+
+msgid "Select Tasmota image"
+msgstr ""
+
+msgid "Image backup"
+msgstr ""
+
+msgid "Select flash size"
+msgstr ""
+
+msgid "Saving firmware"
+msgstr ""
