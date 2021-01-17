@@ -33,7 +33,7 @@ class Setting:
             else:
                 value = self._settings.value(self.command, self.default)
         except keyring.errors.KeyringError:
-            QMessageBox.critical(self, "Error", "Tasmotizer is unable to use your system keyring")
+            QMessageBox.critical(self, _("Error"), _("Tasmotizer is unable to use your system keyring"))
 
         if value:
             if isinstance(self._widget, SpinBox):
@@ -85,7 +85,7 @@ class Setting:
                 else:
                     self._settings.setValue(self.command, value)
             except keyring.errors.KeyringError:
-                QMessageBox.critical(self, "Error", "Tasmotizer is unable to use your system keyring")
+                QMessageBox.critical(self, _("Error"), _("Tasmotizer is unable to use your system keyring"))
 
             return f'{self.command} {value}'
 
@@ -138,9 +138,9 @@ configs = {
         ],
     'SetOptions':
         [
-            Setting(command='setoption19', description='Enable HomeAssistant auto-discovery (SetOption19)', widget_class=QCheckBox),
-            Setting(command='setoption52', description='Display optional time offset from UTC in JSON payloads (SetOption52)', widget_class=QCheckBox),
-            Setting(command='setoption65', description='Tasmota won\'t erase the settings after 4 quick power cycles (SetOption65)', widget_class=QCheckBox),
+            Setting(command='setoption19', description=_('Enable HomeAssistant auto-discovery (SetOption19)'), widget_class=QCheckBox),
+            Setting(command='setoption52', description=_('Display optional time offset from UTC in JSON payloads (SetOption52)'), widget_class=QCheckBox),
+            Setting(command='setoption65', description=_('Tasmota won\'t erase the settings after 4 quick power cycles (SetOption65)'), widget_class=QCheckBox),
         ]
 }
 
@@ -165,7 +165,7 @@ class ConfigWidget(QWidget):
 class SendConfigDialog(QDialog):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Send configuration to device')
+        self.setWindowTitle(_('Send configuration to device'))
         self.settings = QSettings(QSettings.IniFormat, QSettings.UserScope, 'tasmota', 'tasmotizer')
 
         self.commands = []
@@ -223,7 +223,7 @@ class SendConfigDialog(QDialog):
                 self.commands.append("restart 1")
                 self.done(QDialog.Accepted)
             else:
-                QMessageBox.warning(self, "Warning", "Nothing to send.\nTick one of the checkboxes on the list.")
+                QMessageBox.warning(self, _("Warning", "Nothing to send.\nTick one of the checkboxes on the list."))
 
         except MissingDetail as e:
             QMessageBox.critical(self, e.args[0], e.args[1])

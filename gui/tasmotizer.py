@@ -199,18 +199,18 @@ class Tasmotizer(QDialog):
 
     def openBinFile(self):
         previous_file = self.settings.value('bin_file')
-        file, ok = QFileDialog.getOpenFileName(self, 'Select Tasmota image', previous_file, filter='BIN files (*.bin)')
+        file, ok = QFileDialog.getOpenFileName(self, _('Select Tasmota image'), previous_file, filter='BIN files (*.bin)')
         if ok:
             self.file.setText(file)
 
     def get_backup_size(self):
-        return QInputDialog.getItem(self, 'Image backup', 'Select flash size', [f'{2 ** s}MB' for s in range(5)],
+        return QInputDialog.getItem(self, _('Image backup'), _('Select flash size'), [f'{2 ** s}MB' for s in range(5)],
                              editable=False)
 
     def backup(self):
         backup_size, ok = self.get_backup_size()
         if ok:
-            self.start_process(title='Saving firmware', backup=True, backup_size=backup_size)
+            self.start_process(title=_('Saving firmware'), backup=True, backup_size=backup_size)
 
     def get_ip(self):
         self.port = QSerialPort(self.cbxPort.currentData())
