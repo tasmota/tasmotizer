@@ -30,7 +30,7 @@ setup(
     author='jziolkowski',
     author_email='jacek@ziolkowscy.com',
     description='The time has come to... Tasmotize!',
-    long_description="Tasmotizer is a dedicated flashing tool for <a href=https://github.com/arendst/Tasmota>Tasmota</>, featuring automatic firmware backup, downlading release and development bins, and device configuration.",
+    long_description="Tasmotizer is a dedicated flashing tool for <a href=https://github.com/arendst/Tasmota>Tasmota</>, featuring automatic firmware backup, downloading release and development bins, and device configuration.",
     python_requires='>=3.6',
     install_requires=[
         "pyserial>=3.0",
