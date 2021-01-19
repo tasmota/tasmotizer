@@ -1214,7 +1214,7 @@ class ESP32ROM(ESPLoader):
             """ reading of BLOCK1 is ALLOWED so we will read and verify for non-zero.
             When ESP32 has not generated AES/encryption key in BLOCK1, the contents will be readable and 0.
             If the flash encryption is enabled it is expected to have a valid non-zero key. We break out on
-            first occurance of non-zero value """
+            first occurrence of non-zero value """
             key_word = [0] * 7
             for i in range(len(key_word)):
                 key_word[i] = self.read_efuse(14 + i)
@@ -2343,7 +2343,7 @@ def write_flash(esp, args):
             do_write = False
 
         if (esp.FLASH_WRITE_SIZE % 32) != 0:
-            print('\nWARNING - Flash write address is not aligned to the recommeded 32 bytes')
+            print('\nWARNING - Flash write address is not aligned to the recommended 32 bytes')
             do_write = False
 
         if not do_write and not args.ignore_flash_encryption_efuse_setting:
@@ -3021,7 +3021,7 @@ def expand_file_arguments():
 class FlashSizeAction(argparse.Action):
     """ Custom flash size parser class to support backwards compatibility with megabit size arguments.
 
-    (At next major relase, remove deprecated sizes and this can become a 'normal' choices= argument again.)
+    (At next major release, remove deprecated sizes and this can become a 'normal' choices= argument again.)
     """
     def __init__(self, option_strings, dest, nargs=1, auto_detect=False, **kwargs):
         super(FlashSizeAction, self).__init__(option_strings, dest, nargs, **kwargs)
