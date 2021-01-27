@@ -1,2 +1,2 @@
-pyinstaller
+pyinstaller==3.5
 wheel
