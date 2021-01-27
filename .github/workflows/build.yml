@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-2016
+    runs-on: windows-2019
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -27,7 +27,7 @@ jobs:
           path: dist/tasmotizer-1.2.1.exe
 
   build-windows-x86:
-    runs-on: windows-2016
+    runs-on: windows-2019
     steps:
       - name: Checkout
         uses: actions/checkout@v1
