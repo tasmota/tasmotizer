@@ -6,14 +6,14 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-2019
+    runs-on: windows-2016
     steps:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: '3.7.5'
           architecture: 'x64'
       - name: Install requirements
         run: |
@@ -27,14 +27,14 @@ jobs:
           path: dist/tasmotizer-1.2.1.exe
 
   build-windows-x86:
-    runs-on: windows-2019
+    runs-on: windows-2016
     steps:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: '3.7.5'
           architecture: 'x86'
       - name: Install requirements
         run: |
@@ -55,7 +55,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: '3.7.5'
       - name: Install requirements
         run: |
           pip install -r requirements.txt -r requirements_build.txt
@@ -78,7 +78,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: '3.7.5'
       - name: Install requirements
         run: |
           pip install -r requirements.txt -r requirements_build.txt
