@@ -4,7 +4,7 @@ block_cipher = None
 
 a = Analysis(['tasmotizer.py'],
              binaries=[],
-             datas=[('banner.py', '.')],
+             datas=[('utils.py', '.'), ('banner.py', '.'), ('gui.py', '.'), ('tasmotizer_esptool.py', '.')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
