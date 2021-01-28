@@ -1,1 +1,2 @@
+pywin32
 pyinstaller>=4.2
