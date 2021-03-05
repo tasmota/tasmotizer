@@ -11,7 +11,7 @@ class ProcessDialog(QDialog):
     def __init__(self, port, **kwargs):
         super().__init__()
 
-        self.setWindowTitle(kwargs.get('title', 'Tasmotizing...'))
+        self.setWindowTitle(kwargs.get('title', _('Tasmotizing...')))
         self.setFixedWidth(400)
 
         self.exception = None
@@ -130,8 +130,8 @@ class ProcessDialog(QDialog):
     @pyqtSlot()
     def wait_for_user(self):
         dlg = QMessageBox.information(self,
-                                      'User action required',
-                                      'Please power cycle the device, wait a moment and press OK',
+                                      _('User action required'),
+                                      _('Please power cycle the device, wait a moment and press OK'),
                                       QMessageBox.Ok | QMessageBox.Cancel)
         if dlg == QMessageBox.Ok:
             self.esp.continue_ok()
@@ -149,7 +149,7 @@ class ProcessDialog(QDialog):
         self.done(QDialog.Accepted)
 
     def abort(self):
-        self.sb.showMessage('Aborting...', 0)
+        self.sb.showMessage(_('Aborting...'), 0)
         QApplication.processEvents()
         self.esp.abort()
         self.stop_thread()

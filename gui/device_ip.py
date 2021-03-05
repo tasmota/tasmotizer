@@ -38,7 +38,7 @@ class DeviceIP(QDialog):
             self.port.readyRead.connect(self.read)
             self.port.write(bytes('IPAddress1\n', 'utf8'))
         except Exception as e:
-            QMessageBox.critical(self, 'Error', f'Port access error:\n{e}')
+            QMessageBox.critical(self, _('Error'), f_('Port access error:\n{e}'))
 
     def read(self):
         try:
