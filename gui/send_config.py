@@ -116,6 +116,7 @@ configs = {
         [
             Setting(command='mqtthost', description='Broker', widget_class=QLineEdit, required=True),
             Setting(command='mqttport', description='Port', widget_class=SpinBox, default=1883),
+            Setting(command='mqttclient', description='ClientID', widget_class=QLineEdit),
             Setting(command='topic', description='Topic', widget_class=QLineEdit, required=True, default='tasmota_%06X'),
             Setting(command='fulltopic', description='FullTopic', widget_class=QLineEdit, required=True, default='%prefix%/%topic%/'),
         ],
