@@ -699,6 +699,9 @@ class Tasmotizer(QDialog):
                     self.port = QSerialPort(self.cbxPort.currentData())
                     self.port.setBaudRate(115200)
                     self.port.open(QIODevice.ReadWrite)
+                    self.port.setDataTerminalReady(0)
+                    self.port.setRequestToSend(0)
+                    sleep(.5)
                     bytes_sent = self.port.write(bytes(dlg.commands, 'utf8'))
                 except Exception as e:
                     QMessageBox.critical(self, 'Error', f'Port access error:\n{e}')
