@@ -1,5 +1,3 @@
-name: Build_Tasmotizer
-
 on:
   workflow_dispatch:  # Manually start a workflow
   push:
