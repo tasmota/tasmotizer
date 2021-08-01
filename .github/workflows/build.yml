@@ -1,4 +1,4 @@
-name: Build Workflow
+name: Build Tasmotizer
 
 on:
   workflow_dispatch:  # Manually start a workflow
