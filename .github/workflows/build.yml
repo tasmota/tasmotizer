@@ -1,10 +1,9 @@
-name: Build Tasmotizer
+name: Build_Tasmotizer
 
 on:
   workflow_dispatch:  # Manually start a workflow
   push:
-    branches:
-    - release
+    branches: release
     paths-ignore:
     - '.github/**' # Ignore changes towards the .github directory
 
@@ -12,96 +11,96 @@ jobs:
   build-windows:
     runs-on: windows-2019
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Install Python
-        uses: actions/setup-python@v1
-        with:
-          python-version: '3.7'
-          architecture: 'x64'
-      - name: Install requirements
-        run: |
-          pip install -r requirements.txt -r requirements_build.txt
-      - name: Run PyInstaller
-        run: |
-          python -m PyInstaller tasmotizer.spec
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Windows_tasmotizer
-          path: dist/tasmotizer-1.2.1.exe
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.7'
+        architecture: 'x64'
+    - name: Install requirements
+      run: |
+        pip install -r requirements.txt -r requirements_build.txt
+    - name: Run PyInstaller
+      run: |
+        python -m PyInstaller tasmotizer.spec
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Windows_tasmotizer
+        path: dist/tasmotizer-1.2.1.exe
 
   build-windows-x86:
     runs-on: windows-2019
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Install Python
-        uses: actions/setup-python@v1
-        with:
-          python-version: '3.7'
-          architecture: 'x86'
-      - name: Install requirements
-        run: |
-          pip install -r requirements.txt -r requirements_build.txt
-      - name: Run PyInstaller
-        run: |
-          python -m PyInstaller tasmotizer32.spec
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Windows_tasmotizer32
-          path: dist/tasmotizer-1.2.1-x86.exe
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.7'
+        architecture: 'x86'
+    - name: Install requirements
+      run: |
+        pip install -r requirements.txt -r requirements_build.txt
+    - name: Run PyInstaller
+      run: |
+        python -m PyInstaller tasmotizer32.spec
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Windows_tasmotizer32
+        path: dist/tasmotizer-1.2.1-x86.exe
 
   build-ubuntu:
     runs-on: ubuntu-20.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Install Python
-        uses: actions/setup-python@v1
-        with:
-          python-version: '3.9'
-      - name: Install requirements
-        run: |
-          pip install -r requirements.txt -r requirements_build.txt
-      - name: Run PyInstaller
-        run: |
-          python -m PyInstaller tasmotizer.spec
-      - name: See dist directory
-        run: ls dist
-      - name: 'Tar files'
-        run: gzip dist/tasmotizer*
-      - name: 'show gzip'
-        run: ls dist
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Ubuntu
-          path: dist/tasmotizer-1.2.1
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.9'
+    - name: Install requirements
+      run: |
+        pip install -r requirements.txt -r requirements_build.txt
+    - name: Run PyInstaller
+      run: |
+        python -m PyInstaller tasmotizer.spec
+    - name: See dist directory
+      run: ls dist
+    - name: 'Tar files'
+      run: gzip dist/tasmotizer*
+    - name: 'show gzip'
+      run: ls dist
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Ubuntu
+        path: dist/tasmotizer-1.2.1
 
 
   build-macos:
     runs-on: macOS-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Install Python
-        uses: actions/setup-python@v1
-        with:
-          python-version: '3.9'
-      - name: Install requirements
-        run: |
-          pip install -r requirements.txt -r requirements_build.txt
-      - name: Run PyInstaller
-        run: |
-          python -m PyInstaller tasmotizer_mac.spec
-      - name: See dist directory
-        run: ls dist
-      - name: Move app
-        run: |
-          mv dist/tasmotizer-1.2.1.app dist/tasmotizer-1.2.1-dev-macOS.app
-      - name: 'Tar files'
-        run: tar -cvf dist.tar dist/*
-      - name: 'Upload Artifact'
-      - uses: actions/upload-artifact@v2
-        with:
-          name: macOS
-          path: dist.tar
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.9'
+    - name: Install requirements
+      run: |
+        pip install -r requirements.txt -r requirements_build.txt
+    - name: Run PyInstaller
+      run: |
+        python -m PyInstaller tasmotizer_mac.spec
+    - name: See dist directory
+      run: ls dist
+    - name: Move app
+      run: |
+        mv dist/tasmotizer-1.2.1.app dist/tasmotizer-1.2.1-dev-macOS.app
+    - name: 'Tar files'
+      run: tar -cvf dist.tar dist/*
+    - name: 'Upload Artifact'
+    - uses: actions/upload-artifact@v2
+      with:
+        name: macOS
+        path: dist.tar
