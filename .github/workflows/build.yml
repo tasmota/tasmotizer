@@ -1,15 +1,19 @@
 name: Build Workflow
 
 on:
+  workflow_dispatch:  # Manually start a workflow
   push:
-#    branches: master
+    branches:
+    - release
+    paths-ignore:
+    - '.github/**' # Ignore changes towards the .github directory
 
 jobs:
   build-windows:
     runs-on: windows-2019
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Install Python
         uses: actions/setup-python@v1
         with:
@@ -30,7 +34,7 @@ jobs:
     runs-on: windows-2019
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Install Python
         uses: actions/setup-python@v1
         with:
@@ -51,7 +55,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Install Python
         uses: actions/setup-python@v1
         with:
@@ -64,6 +68,10 @@ jobs:
           python -m PyInstaller tasmotizer.spec
       - name: See dist directory
         run: ls dist
+      - name: 'Tar files'
+        run: gzip dist/tasmotizer*
+      - name: 'show gzip'
+        run: ls dist
       - uses: actions/upload-artifact@v2
         with:
           name: Ubuntu
@@ -74,7 +82,7 @@ jobs:
     runs-on: macOS-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Install Python
         uses: actions/setup-python@v1
         with:
@@ -90,7 +98,10 @@ jobs:
       - name: Move app
         run: |
           mv dist/tasmotizer-1.2.1.app dist/tasmotizer-1.2.1-dev-macOS.app
+      - name: 'Tar files'
+        run: tar -cvf dist.tar dist/*
+      - name: 'Upload Artifact'
       - uses: actions/upload-artifact@v2
         with:
           name: macOS
-          path: dist/
+          path: dist.tar
