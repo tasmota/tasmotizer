@@ -11,7 +11,7 @@ jobs:
   build-windows:
     runs-on: windows-2019
     steps:
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
     - name: Install Python
       uses: actions/setup-python@v1
       with:
@@ -31,7 +31,7 @@ jobs:
   build-windows-x86:
     runs-on: windows-2019
     steps:
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
     - name: Install Python
       uses: actions/setup-python@v1
       with:
@@ -51,7 +51,7 @@ jobs:
   build-ubuntu:
     runs-on: ubuntu-20.04
     steps:
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
     - name: Install Python
       uses: actions/setup-python@v1
       with:
@@ -77,7 +77,7 @@ jobs:
   build-macos:
     runs-on: macOS-latest
     steps:
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
     - name: Install Python
       uses: actions/setup-python@v1
       with:
