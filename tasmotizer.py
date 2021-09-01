@@ -35,19 +35,21 @@ class ESPWorker(QObject):
     def __init__(self, port, actions, **params):
         super().__init__()
         self.command = [
-                      '--chip', 'esp8266',
                       '--port', port,
                       '--baud', '115200'
             ]
 
         self._actions = actions
         self._params = params
-        self._continue = False
+        self._continue = False   
 
     @pyqtSlot()
     def run(self):
         esptool.sw.setContinueFlag(True)
-
+        
+        self.command.append('--chip')
+        self.command.append(self._params['chip'])
+        
         try:
             if 'backup' in self._actions:
                 command_backup = ['read_flash', '0x00000', self._params['backup_size'],
@@ -326,6 +328,8 @@ class ProcessDialog(QDialog):
 
         if self.file_path:
             self._actions.append('write')
+            
+        self.espChip = kwargs.get('espChip') 
 
         self.create_ui()
         self.start_process()
@@ -373,14 +377,16 @@ class ProcessDialog(QDialog):
         params = {
             'file_path': self.file_path,
             'auto_reset': self.auto_reset,
-            'erase': self.erase
+            'erase': self.erase,
+            'chip': 'esp' + str(self.espChip)
         }
-
         if self.backup:
             backup_size = f'0x{2 ** self.backup_size}00000'
             params['backup_size'] = backup_size
 
         self.esp_thread = QThread()
+        
+
         self.esp = ESPWorker(
             self.port,
             self._actions,
@@ -494,6 +500,8 @@ class Tasmotizer(QDialog):
         self.nam = QNetworkAccessManager()
         self.nrRelease = QNetworkRequest(QUrl(f'{BINS_URL}/tasmota/release/release.php'))
         self.nrDevelopment = QNetworkRequest(QUrl(f'{BINS_URL}/tasmota/development.php'))
+        self.nrRelease32 = QNetworkRequest(QUrl(f'{BINS_URL}/tasmota32/release/release.php'))
+        self.nrDevelopment32 = QNetworkRequest(QUrl(f'{BINS_URL}/tasmota32/development.php'))
 
         self.esp_thread = None
 
@@ -501,10 +509,13 @@ class Tasmotizer(QDialog):
         self.setMinimumWidth(480)
 
         self.mode = 0  # BIN file
+        self.espChip = 8266 # ESP chip to use
         self.file_path = ''
 
         self.release_data = b''
+        self.release_data32 = b''
         self.development_data = b''
+        self.development_data32 = b''
 
         self.create_ui()
 
@@ -529,6 +540,20 @@ class Tasmotizer(QDialog):
         gbPort.layout().setStretch(0, 4)
         gbPort.layout().setStretch(1, 1)
 
+        # ESP version  groupbox
+        bgESP = GroupBoxV('Select ESP version', 2)
+
+        hl_rbESP = HLayout(0)
+        self.rbESP8266chip = QRadioButton('ESP8266')
+        self.rbESP8266chip.setChecked(True)
+        self.ESP32chip   = QRadioButton('ESP32')
+        
+        hl_rbESP.addWidgets([self.rbESP8266chip, self.ESP32chip])
+        self.rbgESP = QButtonGroup(bgESP)
+        self.rbgESP.addButton(self.rbESP8266chip, 8266)
+        self.rbgESP.addButton(self.ESP32chip, 32)
+        bgESP.addLayout(hl_rbESP)
+        
         # Firmware groupbox
         gbFW = GroupBoxV('Select image', 3)
 
@@ -543,6 +568,7 @@ class Tasmotizer(QDialog):
         self.rbgFW.addButton(rbFile, 0)
         self.rbgFW.addButton(self.rbRelease, 1)
         self.rbgFW.addButton(self.rbDev, 2)
+        
 
         hl_rb.addWidgets([rbFile, self.rbRelease, self.rbDev])
         gbFW.addLayout(hl_rb)
@@ -605,11 +631,12 @@ class Tasmotizer(QDialog):
         hl_btns = HLayout([50, 3, 50, 3])
         hl_btns.addWidgets([self.pbTasmotize, self.pbConfig, self.pbGetIP, self.pbQuit])
 
-        vl.addWidgets([gbPort, gbBackup, gbFW])
+        vl.addWidgets([gbPort, gbBackup, bgESP, gbFW])
         vl.addLayout(hl_btns)
 
         pbRefreshPorts.clicked.connect(self.refreshPorts)
         self.rbgFW.buttonClicked[int].connect(self.setBinMode)
+        self.rbgESP.buttonClicked[int].connect(self.setESPchip)
         rbFile.setChecked(True)
         pbFile.clicked.connect(self.openBinFile)
 
@@ -627,8 +654,17 @@ class Tasmotizer(QDialog):
             port = QSerialPortInfo(p)
             self.cbxPort.addItem(port.portName(), port.systemLocation())
 
+    def setESPchip(self, radio):
+        self.espChip = radio
+        if self.mode == 1:
+            self.processReleaseInfo()
+        if self.mode == 2:
+            self.processDevelopmentInfo()
+        
     def setBinMode(self, radio):
+
         self.mode = radio
+        
         self.wFile.setVisible(self.mode == 0)
         self.cbHackboxBin.setVisible(self.mode > 0)
 
@@ -636,27 +672,66 @@ class Tasmotizer(QDialog):
             self.processReleaseInfo()
         elif self.mode == 2:
             self.processDevelopmentInfo()
+                
+            
+            
 
     def getFeeds(self):
         self.release_reply = self.nam.get(self.nrRelease)
         self.release_reply.readyRead.connect(self.appendReleaseInfo)
         self.release_reply.finished.connect(lambda: self.rbRelease.setEnabled(True))
+        
+        self.release_reply32 = self.nam.get(self.nrRelease32)
+        self.release_reply32.readyRead.connect(self.appendReleaseInfo32)
+        self.release_reply32.finished.connect(lambda: self.rbRelease.setEnabled(True))
 
         self.development_reply = self.nam.get(self.nrDevelopment)
         self.development_reply.readyRead.connect(self.appendDevelopmentInfo)
         self.development_reply.finished.connect(lambda: self.rbDev.setEnabled(True))
+        
+        self.development_reply32 = self.nam.get(self.nrDevelopment32)
+        self.development_reply32.readyRead.connect(self.appendDevelopmentInfo32)
+        self.development_reply32.finished.connect(lambda: self.rbDev.setEnabled(True))
 
     def appendReleaseInfo(self):
         self.release_data += self.release_reply.readAll()
+        
+    def appendReleaseInfo32(self):
+        self.release_data32 += self.release_reply32.readAll()
 
     def appendDevelopmentInfo(self):
         self.development_data += self.development_reply.readAll()
+        
+    def appendDevelopmentInfo32(self):
+        self.development_data32 += self.development_reply32.readAll()
 
     def processReleaseInfo(self):
-        self.fill_bin_combo(self.release_data, self.rbRelease)
+        try:
+            if self.espChip == 0:
+                raise Exception('No Esp Chip selected')
+            
+            if self.espChip == 8266: 
+                self.fill_bin_combo(self.release_data, self.rbRelease)
+                
+            if self.espChip == 32:
+                self.fill_bin_combo(self.release_data32, self.rbRelease)
+                
+        except Exception as e:
+            QMessageBox.critical(self, 'ESP chip error', f'{e}')
 
     def processDevelopmentInfo(self):
-        self.fill_bin_combo(self.development_data, self.rbDev)
+        try:
+            if self.espChip == 0:
+                raise Exception('No Esp Chip selected')
+            
+            if self.espChip == 8266: 
+                self.fill_bin_combo(self.development_data, self.rbDev)
+                
+            if self.espChip == 32:
+                self.fill_bin_combo(self.development_data32, self.rbDev)
+                
+        except Exception as e:
+            QMessageBox.critical(self, 'ESP chip error', f'{e}')
 
     def fill_bin_combo(self, data, rb):
         try:
@@ -671,6 +746,7 @@ class Tasmotizer(QDialog):
                     img['filesize'] //= 1024
                     self.cbHackboxBin.addItem('{binary} [{filesize}kB]'.format(**img), '{otaurl}'.format(**img))
                 self.cbHackboxBin.setEnabled(True)
+
         except json.JSONDecodeError as e:
             self.setBinMode(0)
             self.rbgFW.button(0).setChecked(True)
@@ -731,6 +807,9 @@ class Tasmotizer(QDialog):
 
     def start_process(self):
         try:
+            if self.espChip == 0:
+                raise Exception('No ESP chip selected')
+                
             if self.mode == 0:
                 if len(self.file.text()) > 0:
                     self.file_path = self.file.text()
@@ -747,7 +826,8 @@ class Tasmotizer(QDialog):
                 backup=self.cbBackup.isChecked(),
                 backup_size=self.cbxBackupSize.currentIndex(),
                 erase=self.cbErase.isChecked(),
-                auto_reset=self.cbSelfReset.isChecked()
+                auto_reset=self.cbSelfReset.isChecked(),
+                espChip=self.espChip
             )
             result = process_dlg.exec_()
             if result == QDialog.Accepted:
