@@ -32,7 +32,7 @@ The full-featured ESP8266 flashing tool for Tasmota. With the great [ESPtool](ht
  - Option 2: Install from PyPI using pip:<br/>
  Upgrade pip and wheel packages: `pip3 install --upgrade pip wheel`<br/>
  Install tasmotizer: `pip3 install tasmotizer`   
- Then simply run `tasmotizer.py` from the shell/command line
+ Then simply run `tasmotizer.py` or `python3 -m tasmotizer.py` from the shell/command line
  
  - Option 3: Clone the repo, `pip3 install -r requirements.txt` followed by `python3 tasmotizer.py ` and flash away!
  
