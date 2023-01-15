@@ -34,7 +34,7 @@ The full-featured ESP8266 flashing tool for [Tasmota](https://github.com/arendst
  Install tasmotizer: `pip3 install tasmotizer`   
  Then simply run `tasmotizer.py` or `python3 -m tasmotizer.py` from the shell/command line
  
- - Option 3: Build from source
+ - Option 3: Build from source<br/>
  Clone the repo<br/>
  Upgrade pip and wheel packages: `pip3 install --upgrade pip wheel`<br/>
  Install requirements `pip3 install -r requirements.txt`<br/>
