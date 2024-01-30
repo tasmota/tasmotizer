@@ -9,9 +9,9 @@ jobs:
     runs-on: windows-2019
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: '3.8'
           architecture: 'x64'
@@ -21,7 +21,7 @@ jobs:
       - name: Run PyInstaller
         run: |
           python -m PyInstaller tasmotizer.spec
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: Windows_tasmotizer
           path: dist/tasmotizer-1.2.1.exe
@@ -30,9 +30,9 @@ jobs:
     runs-on: windows-2019
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: '3.8'
           architecture: 'x86'
@@ -42,7 +42,7 @@ jobs:
       - name: Run PyInstaller
         run: |
           python -m PyInstaller tasmotizer32.spec
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: Windows_tasmotizer32
           path: dist/tasmotizer-1.2.1-x86.exe
@@ -51,9 +51,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: '3.8'
       - name: Install requirements
@@ -68,7 +68,7 @@ jobs:
         run: gzip dist/tasmotizer-1.2.1
       - name: 'show gzip'
         run: ls dist
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: Ubuntu
           path: dist/tasmotizer-1.2.1.gz
@@ -78,9 +78,9 @@ jobs:
     runs-on: macOS-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: '3.8'
       - name: Install requirements
@@ -97,7 +97,7 @@ jobs:
       - name: 'Tar files'
         run: tar -cvf dist.tar dist/*
       - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: macOS
           path: dist.tar
