@@ -21,7 +21,7 @@ jobs:
       - name: Run PyInstaller
         run: |
           python -m PyInstaller tasmotizer.spec
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Windows_tasmotizer
           path: dist/tasmotizer-1.2.1.exe
@@ -42,7 +42,7 @@ jobs:
       - name: Run PyInstaller
         run: |
           python -m PyInstaller tasmotizer32.spec
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Windows_tasmotizer32
           path: dist/tasmotizer-1.2.1-x86.exe
@@ -68,7 +68,7 @@ jobs:
         run: gzip dist/tasmotizer-1.2.1
       - name: 'show gzip'
         run: ls dist
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Ubuntu
           path: dist/tasmotizer-1.2.1.gz
@@ -97,7 +97,7 @@ jobs:
       - name: 'Tar files'
         run: tar -cvf dist.tar dist/*
       - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macOS
           path: dist.tar
